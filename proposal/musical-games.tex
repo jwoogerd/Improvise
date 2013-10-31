@@ -1,5 +1,7 @@
 \documentclass{proc}
 \usepackage{verbatim}
+\usepackage{biblatex}
+\bibliography{bibliography}
 
 \begin{document}
 
@@ -12,7 +14,7 @@ Theory}
 
 \section{Introduction}
 
-In \emph{A Model of Performance, Interaction, and Improvisation}, Paul Hudak
+In \emph{A Model of Performance, Interaction, and Improvisation} \cite{hudakberger95}, Paul Hudak
 outlines a formal model of music performance and improvisation based on the idea of  \emph{mutually recursive processes}.  
 
 This model lends itself to an form of algorithmic composition using game theory.  In this model, we treat engaged processes as players in a game.  The payoff for each player is quantified by a player's notion of aesthetically pleasing music.  The rules of the game specify the allowable moves of a player given all possible game situations.  Finally, a player's strategy is a (non-deterministic) algorithm for playing the game.
@@ -30,7 +32,7 @@ Originality (software artifact)
 \section{Next Steps}
 
 \begin{enumerate}
-\item Download and become familiar with Haskore and Hagl.  Experiment with music generation using Paul Hudak's generative grammars and tools.
+\item Download and become familiar with Haskore/Euterpea and Hagl.  Experiment with music generation using Paul Hudak's generative grammars and tools.
 
 \item Produce a well-defined (coded) definition for moves (i.e. sequence of time-stamped musical events).  In this case, r is a sequence of time-stamped musical events, which is defined through mutual recursion given a player's interpretation of a score and the most recent moves made by each player.
 
@@ -48,6 +50,18 @@ Originality (software artifact)
 
 \item Experiment with payoffs and strategies to find those that produce nice sounding music.
 
+\end{enumerate}
+
+\section{Related Publications}
+\begin{quote}
+\textit{List major publications that are most relevant to this project, and how they are related.}
+\end{quote}
+
+\begin{enumerate} 
+\item \fullcite{hudakberger95}
+\item \fullcite{haskore}
+\item \fullcite{gametheory}
+\item \fullcite{gametheorythesis}
 \end{enumerate}
 
 \begin{comment}
@@ -102,22 +116,11 @@ What are we looking to achieve?  What's the conclusion?
 \end{quote}
 
 
-\section{5 Related Publications}
-\begin{quote}
-\textit{List 5 major publications that are most relevant to this project, and how they are related.}
-\end{quote}
-
-\begin{enumerate} 
-\item One relevant source
-\item Another source
-\end{enumerate}
-
 \section{Define Success}
 \begin{quote}
 \textit{When / How do you know if you have succeeded in this project?}
 \end{quote}
 \end{comment}
 
-\bibliographystyle{abbrv}
-\bibliography{proposal-template}
+%\bibliographystyle{abbrv}
 \end{document}
