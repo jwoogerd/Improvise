@@ -1,3 +1,7 @@
 proposal/*.aux
 proposal/*.log
 proposal/*.synctex.gz
+proposal/*blx.bib
+proposal/*.bbl
+proposal/*.blg
+proposal/*.run.xml
