@@ -1,0 +1,12 @@
+need to:
+figure out how to represent a score in hagl
+
+each note is an iterated game -- with an eye to past AND future games
+same matrix each matrix of a single game
+different matrix on your next note
+
+each move is following the score, maybe making minor adjustments
+
+
+each game is an eigth note
+you choose to extend your previous move, rest, or make a new move
