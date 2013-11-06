@@ -1,0 +1,55 @@
+----------------- Meeting notes 11/3  --------------------
+need to:
+figure out how to represent a score in hagl
+
+each note is an iterated game -- with an eye to past AND future games
+same matrix each matrix of a single game
+different matrix on your next note
+
+each move is following the score, maybe making minor adjustments
+
+
+each game is an eigth note
+you choose to extend your previous move, rest, or make a new move
+
+
+----------------- Meeting notes 11/5  --------------------
+{- 
+
+normal :: Int -> [[moves]] -> [[Float]] -> Game mv
+improv = normal (number of players (2))        ->
+                (fun :: [score] -> [[move]])   ->
+                (fun :: [[move]] -> [[float]]) ->
+                Game move
+-}
+
+data Move = Pitch (Pitch Octave)
+          | Rest
+          | Extend
+
+m1, m2 :: [move] -- possible next moves
+r1, r2 :: [move] -- represents music already played
+
+{- to get playable music:
+    need a way to map from [move] -> Music a
+    and a way to map from [[move]] -> Music a (merge two players' realizations)
+-}
+
+{- goodnesses - returns a list of fractional contribution to overall goodnesses, 
+ - which must sum to 1.0 -}
+goodnesses :: [[move]] -> [Float]  
+goodneses players =
+        let ogs => map (\p -> og [p]) players
+            tot => og players
+            sum => sum ogs
+        in map (\g -> g*tot/sum) ogs
+
+overall_goodness :: [[move]] -> Float
+ {- in python-ish
+    matrix = []
+    for move1 in m1
+        new1 = move1:r1
+        for move2 in m2
+            new2 = move2:r2
+            matrix = goodnesses : matrix
+-}
