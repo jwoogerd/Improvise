@@ -1,0 +1,12 @@
+We are developing a tool to generate embellishments of simple scores.
+
+We provide a base set of definitions in a number of categories:
+aesthetic of music
+value of contribution to a score
+strategy for playing a music based game
+depth of what to consider in that game
+resolution
+
+We also allow people to write and use their own definitions in any of these categories
+
+This will allow people to use computers to create many versions of the same piece of music, and possible generate new ideas for how to modify a piece of music.
