@@ -68,5 +68,8 @@ instance Game Improvise where
                             in Continuous (newState, (Payoff . f . ByPlayer . reverse) ms)
                             (\_ -> Nothing)
                             
-main = do { putStrLn "yo" }
+octv :: Octave
+octv = 5
+main = do { putStrLn "Just MG" ;
+            Euterpea.play (Prim (Note 1 (Ass, octv)))}
 
