@@ -54,3 +54,10 @@ intToPitch i =
 	where 
 		o = i/12
 		p = i%12
+
+shiftBy :: Pitch -> Int -> Pitch
+shiftBy p i =
+	| x < 0 = error
+	| _		= intToPitch x
+	where x = (i + pitchToInt p)
+
