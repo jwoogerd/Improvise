@@ -7,3 +7,5 @@ proposal/*.blg
 proposal/*.run.xml
 Euterpea
 Hagl
+dist
+*.o
