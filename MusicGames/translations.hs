@@ -37,3 +37,20 @@ pitchToInt (B,   o) = 11 + o * 12
 pitchToInt (Bs,  o) = 12 + o * 12
 pitchToInt (Bss, o) = 13 + o * 12
 
+intToPitch :: Int -> Pitch
+intToPitch i =
+	| p == 0  = (C, o)
+	| p == 1  = (Cs,o)
+	| p == 2  = (D, o)
+	| p == 3  = (Ds,o)
+	| p == 4  = (E, o)
+	| p == 5  = (F, o)
+	| p == 6  = (Fs,o)
+	| p == 7  = (G, o)
+	| p == 8  = (Gs,o)
+	| p == 9  = (A, o)
+	| p == 10 = (As,o)
+	| p == 11 = (B, o)
+	where 
+		o = i/12
+		p = i%12
