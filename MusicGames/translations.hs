@@ -1,4 +1,5 @@
-module Translation where
+module Translations where
+
 import Euterpea
 
 pitchToInt :: Pitch -> Int

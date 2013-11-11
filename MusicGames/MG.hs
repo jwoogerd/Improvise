@@ -6,6 +6,7 @@ import Data.List           (elemIndices, intersperse, transpose)
 import Text.Printf         (printf)
 import Hagl
 import Euterpea
+import Translations
 
 range = 5
 
