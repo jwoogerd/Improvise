@@ -55,7 +55,7 @@ intToPitch i =
 	  	11 -> (B, o)
 	where 
 		p = mod i 12
-		o = quot (i - p) 12
+		o = quot i 12
 
 shiftBy :: Pitch -> Int -> Pitch
 shiftBy p i =
