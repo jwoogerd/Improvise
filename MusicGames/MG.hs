@@ -37,10 +37,6 @@ lowerMoves :: Pitch -> Int -> [RMove]
 lowerMoves p i = case i of 0 -> []
                            _ -> let u = halfStepDown p 
                                 in  Begin u : lowerMoves u (i - 1)
-
-halfStepDown p = (C, 1)
-halfStepUp p = (C, 1)
-  --temporary
  
 
 main = do { putStrLn "yo" }

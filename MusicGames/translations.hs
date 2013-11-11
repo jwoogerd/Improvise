@@ -61,3 +61,10 @@ shiftBy p i =
 	| _		= intToPitch x
 	where x = (i + pitchToInt p)
 
+halfStepDown :: Pitch -> Pitch
+halfStepDown p = shiftBy p (-1)
+halfStepUp :: Pitch -> Pitch
+halfStepUp   p = shiftBy p   1
+
+interval :: Pitch -> Pitch -> Int
+interval p1 p2 = (pitchToInt p2) - (pitchToInt p1)
