@@ -1,3 +1,4 @@
+module Translation where
 import Euterpea
 
 pitchToInt :: Pitch -> Int
@@ -39,27 +40,29 @@ pitchToInt (Bss, o) = 13 + o * 12
 
 intToPitch :: Int -> Pitch
 intToPitch i =
-	| p == 0  = (C, o)
-	| p == 1  = (Cs,o)
-	| p == 2  = (D, o)
-	| p == 3  = (Ds,o)
-	| p == 4  = (E, o)
-	| p == 5  = (F, o)
-	| p == 6  = (Fs,o)
-	| p == 7  = (G, o)
-	| p == 8  = (Gs,o)
-	| p == 9  = (A, o)
-	| p == 10 = (As,o)
-	| p == 11 = (B, o)
+	case p of
+	  	0  -> (C, o)
+	  	1  -> (Cs,o)
+	  	2  -> (D, o)
+	  	3  -> (Ds,o)
+	  	4  -> (E, o)
+	  	5  -> (F, o)
+	  	6  -> (Fs,o)
+	  	7  -> (G, o)
+	  	8  -> (Gs,o)
+	  	9  -> (A, o)
+	  	10 -> (As,o)
+	  	11 -> (B, o)
 	where 
-		o = i/12
-		p = i%12
+		p = mod i 12
+		o = quot (i - p) 12
 
 shiftBy :: Pitch -> Int -> Pitch
 shiftBy p i =
-	| x < 0 = error
-	| _		= intToPitch x
-	where x = (i + pitchToInt p)
+	if (x < 0) then error "pitch out of range"
+	else
+		intToPitch x
+		where x = (i + pitchToInt p)
 
 halfStepDown :: Pitch -> Pitch
 halfStepDown p = shiftBy p (-1)
