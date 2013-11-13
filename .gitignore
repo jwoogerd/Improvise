@@ -9,3 +9,5 @@ Euterpea
 Hagl
 dist
 *.o
+*.hi
+*.ho
