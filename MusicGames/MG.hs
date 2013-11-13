@@ -12,12 +12,8 @@ range = 6
 
 data RMove = Begin Pitch
            | Rest
-           | Extend
+           | Extend deriving Show
            -- invariant: Extend implies extending a previous "Begin"
-
-start :: [[RMove]]
-start = [[Begin (C, 5), Main.Rest, Begin (D, 5)], [Begin (A, 5), Extend, Main.Rest]]
--- find a way to assert that inner lists are the same length
 
 type Player = Int
 type RealizationState = [([RMove], [RMove])]
@@ -25,31 +21,27 @@ type RealizationState = [([RMove], [RMove])]
      -- their first list represents the realization of their score at this point in the game
      -- their second list represents the remainder of the score
 
+start :: [[RMove]]
+start = [[Begin (C, 5), Main.Rest, Begin (D, 5)], [Begin (A, 5), Extend, Main.Rest]]
+-- find a way to assert that inner lists are the same length
+
 progress :: RealizationState -> [RMove] -> RealizationState
 progress []              []       = []
-progress ((r,(_:sc)):ps) (mv:mvs) = (mv:r,sc) : (progress ps mvs)
-
+progress ((r, _:sc):ps) (mv:mvs) = (mv:r,sc) : progress ps mvs
 
 possMoves :: [RMove] -> [RMove]
-possMoves l@((Begin p):prev) = rangedMoves l ++ [Main.Rest, Extend]
-possMoves l                  = rangedMoves l
+possMoves (Begin p:prev) = generateMoves p ++ [Main.Rest, Extend]
+possMoves (_      :prev) = possMoves prev
+possMoves []             = [Main.Rest]
 
-rangedMoves :: [RMove] -> [RMove]
-rangedMoves ((Begin p) : prev) = upperMoves p range ++ lowerMoves p range
-rangedMoves (_         : prev) = rangedMoves prev
-rangedMoves []                 = [Main.Rest]
+-- returns a list of RMoves range number of halfsteps above & below p
+generateMoves :: Pitch -> [RMove]
+generateMoves p =
+    let genMoves _ _ 0 = []
+        genMoves p f n = let m = f p
+                         in Begin m : genMoves m f (n-1)
+    in genMoves p halfStepUp range ++ genMoves p halfStepDown range
 
-
-upperMoves :: Pitch -> Int -> [RMove]
-upperMoves p i = case i of 0 -> []
-                           _ -> let u = halfStepUp p 
-                                in  Begin u : upperMoves u (i - 1)
- 
-lowerMoves :: Pitch -> Int -> [RMove]
-lowerMoves p i = case i of 0 -> []
-                           _ -> let u = halfStepDown p 
-                                in  Begin u : lowerMoves u (i - 1)
- 
 data Improvise = Imp (Simultaneous RMove) RealizationState 
 instance Game Improvise where
   
@@ -72,4 +64,3 @@ octv :: Octave
 octv = 5
 main = do { putStrLn "Just MG" ;
             Euterpea.play (Prim (Note 1 (Ass, octv)))}
-
