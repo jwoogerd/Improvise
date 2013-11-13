@@ -31,8 +31,8 @@ progress ((r, _:sc):ps) (mv:mvs) = (mv:r,sc) : progress ps mvs
 
 possMoves :: [RMove] -> [RMove]
 possMoves (Begin p:prev) = generateMoves p ++ [Main.Rest, Extend]
-possMoves (_      :prev) = possMoves prev
-possMoves []             = [Main.Rest]
+possMoves (_      :prev) = take (2*range) $ possMoves prev
+possMoves  _             = [Main.Rest]
 
 -- returns a list of RMoves range number of halfsteps above & below p
 generateMoves :: Pitch -> [RMove]
