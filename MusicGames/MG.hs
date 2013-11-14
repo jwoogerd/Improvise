@@ -8,21 +8,21 @@ import Hagl
 import Euterpea
 import Translations
 
-range = 6
+range = 2
 
 data RMove = Begin Pitch
            | Rest
-           | Extend deriving Show
+           | Extend deriving (Show, Eq)
            -- invariant: Extend implies extending a previous "Begin"
 
-type Player = Int
 type RealizationState = [([RMove], [RMove])]
   -- A list of tuples, each one representing a player
      -- their first list represents the realization of their score at this point in the game
      -- their second list represents the remainder of the score
 
-start :: [[RMove]]
-start = [[Begin (C, 5), Main.Rest, Begin (D, 5)], [Begin (A, 5), Extend, Main.Rest]] --
+start :: RealizationState
+--start = [([],[Begin (C,5), Main.Rest, Begin (D,5)]),([],[Begin (A,5), Extend, Main.Rest])]
+start = [([],[Begin (C,5)]),([],[Begin (A,5)])]
 -- find a way to assert that inner lists are the same length
 
 progress :: RealizationState -> [RMove] -> RealizationState
@@ -68,8 +68,16 @@ instance Game Improvise where
         | otherwise       = let newState = progress rs (reverse ms)
                             in Continuous (newState, (Payoff . f . ByPlayer . reverse) ms)
                             (\_ -> Nothing)
+getPayoff:: Profile RMove -> Payoff
+getPayoff (ByPlayer _) = ByPlayer [1,0]
+
+
+testGame = Imp (Simultaneous 2 (\x -> \y -> True) Main.getPayoff) start
+
+guessPlayers :: [Hagl.Player Improvise]
+guessPlayers = ["A" ::: return Main.Rest, "B" ::: return Main.Rest]
                             
-octv :: Octave
-octv = 5
-main = do { putStrLn "Just MG" ;
-            Euterpea.play (Prim (Note 1 (Ass, octv)))}
+--octv :: Octave
+--octv = 5
+--main = do { putStrLn "Just MG" ;
+--            Euterpea.play (Prim (Note 1 (Ass, octv)))}
