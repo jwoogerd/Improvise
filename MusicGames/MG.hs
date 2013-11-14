@@ -22,7 +22,7 @@ type RealizationState = [([RMove], [RMove])]
      -- their second list represents the remainder of the score
 
 start :: [[RMove]]
-start = [[Begin (C, 5), Main.Rest, Begin (D, 5)], [Begin (A, 5), Extend, Main.Rest]]
+start = [[Begin (C, 5), Main.Rest, Begin (D, 5)], [Begin (A, 5), Extend, Main.Rest]] --
 -- find a way to assert that inner lists are the same length
 
 progress :: RealizationState -> [RMove] -> RealizationState
@@ -30,9 +30,16 @@ progress []              []       = []
 progress ((r, _:sc):ps) (mv:mvs) = (mv:r,sc) : progress ps mvs
 
 possMoves :: [RMove] -> [RMove]
-possMoves (Begin p:prev) = generateMoves p ++ [Main.Rest, Extend]
-possMoves (_      :prev) = take (2*range) $ possMoves prev
-possMoves  _             = [Main.Rest]
+possMoves m@(Begin p:prev) = rangedMoves m ++ [Main.Rest, Extend]
+possMoves                m = rangedMoves m
+
+
+rangedMoves :: [RMove] -> [RMove]
+rangedMoves ((Begin p) :prev) = generateMoves p
+rangedMoves (       _  :prev) = rangedMoves prev
+rangedMoves                 _ = [Main.Rest]                            
+
+
 
 -- returns a list of RMoves range number of halfsteps above & below p
 generateMoves :: Pitch -> [RMove]
@@ -41,6 +48,8 @@ generateMoves p =
         genMoves p f n = let m = f p
                          in Begin m : genMoves m f (n-1)
     in genMoves p halfStepUp range ++ genMoves p halfStepDown range
+
+
 
 data Improvise = Imp (Simultaneous RMove) RealizationState 
 instance Game Improvise where
