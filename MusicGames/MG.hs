@@ -2,8 +2,10 @@
 
 
 import Control.Monad.Trans (liftIO)
+import Control.Monad (liftM,liftM2,unless)
 import Data.List           (elemIndices, intersperse, transpose)
 import Text.Printf         (printf)
+import Hagl.History
 import Hagl
 import Euterpea
 import Translations
@@ -104,10 +106,36 @@ guessPlayers = ["A" ::: return Main.Rest, "B" ::: return Main.Rest]
 
 main = evalGame Improvise guessPlayers (run >> printTranscript)
    where run = printGame >> step >>= maybe run (\p -> printGame >> return p)
+ 
+-- | Print the transcript of the current game iteration, or if the game
+--   has just finished, print the transcript of the last iteration.
+getHistory :: (GameM m g, Show (Move g)) => m ()
+getHistory = do
+    new <- isNewGame
+    n   <- gameNumber
+    printTranscriptOfGame (if new then n-1 else n)
 
+-- | Print transcript of the given game.
+getHistoryOfGame :: (GameM m g, Show (Move g)) => Int -> m ()
+{--
+getHistoryOfGame n = do
+    (t,(_,p)) <- liftM (forGame n) history
+    ps <- players
+    printStr (showTranscript ps t)
+    --Euterpea.play (Prim (Note 1 (Ass, octv)))
+    return ()
+--}
+getHistoryOfGame n =
+    liftM (forGame n) history 
+        >>= (\tuple -> players 
+        >>= (\ps -> return ()))
+                {--
+        >>= (\ps -> printStr (showTranscript ps (fst tuple)) 
+        >> return ()))
+            --}
 
+octv :: Octave
+octv = 5
 
---octv :: Octave
---octv = 5
 --main = do { putStrLn "Just MG" ;
 --            Euterpea.play (Prim (Note 1 (Ass, octv)))}
