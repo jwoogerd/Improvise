@@ -19,12 +19,12 @@ dummyPayoff = 1.0
 baseDur :: Dur
 baseDur = 1/8
 
-range = 8
+range = 4
 
 player1 :: SingularScore
-player1 = SS [] [Begin (C,4), Main.Rest, Begin (D,4)]
+player1 = SS [] [Begin (C,4), Extend (C, 4), Begin (D,4)]
 player2 :: SingularScore
-player2 = SS [] [Begin (A,4), Extend (A,4), Main.Rest]
+player2 = SS [] [Begin (D,4), Extend (F, 4), Main.Rest]
 
 --
 -- Data definitions
@@ -109,12 +109,13 @@ rmoveInterval :: RMove -> RMove -> Maybe Interval
 rmoveInterval (Begin p1)  (Begin p2)  = Just $ interval p1 p2
 rmoveInterval (Begin p1)  (Extend p2) = Just $ interval p1 p2
 rmoveInterval (Extend p1) (Begin p2)  = Just $ interval p1 p2
+rmoveInterval (Extend p1) (Extend p2) = Just $ interval p1 p2
 rmoveInterval _           _           = Nothing
 
 onePlayerPay :: [RMove] -> [[RMove]] -> [IntPreference] -> Float
 onePlayerPay [] _ _ = 0
 onePlayerPay _ [] _ = 0
-onePlayerPay (me:rs) others ps = foldr f 0 others + onePlayerPay rs others ps
+onePlayerPay (me:rs) others ps = foldr f 0 others + onePlayerPay rs (map tail others) ps
     where f (m:ms) acc = case rmoveInterval me m of
                             Nothing -> acc
                             Just a  -> acc + intPref ps (abs a)
@@ -133,7 +134,8 @@ instance Game Improvise where
   type State Improvise = RealizationState
   gameTree _ = stateTreeD who end markable registerMove (pay samplePrefs) start
 
-samplePrefs = [(4 , 4.0), (1, -1.0), (2, 10.0), (6, 5), (3, 2)]
+--samplePrefs = [(4 , 4.0), (1, 1.0), (2, 10.0), (6, 5), (3, 2), (0, 3)]
+samplePrefs = [(1 , 1.0), (2, 2.0), (3, 3.0), (4, 4), (5, 5), (6, 6)]
 
 main = evalGame Improvise guessPlayers (run >> printSummaryOfGame 1)
    where run = step >>= maybe run (\p -> printGame >> playMusic >>return p)
@@ -142,7 +144,7 @@ main = evalGame Improvise guessPlayers (run >> printSummaryOfGame 1)
 
 -- Players
 guessPlayers :: [Hagl.Player Improvise]
-guessPlayers = ["A" ::: (periodic [Begin (C, 4), Main.Rest, Begin (A, 4)]),
+guessPlayers = ["A" ::: (periodic [Begin (C, 4), Main.Rest, Begin (D, 4)]),
                 "B" ::: minimax]
 --guessPlayers = ["A" ::: (periodic [Begin (C, 4), Main.Rest, Begin (A, 4), Extend (A, 4)]),
 
