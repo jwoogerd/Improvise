@@ -19,12 +19,12 @@ dummyPayoff = 1.0
 baseDur :: Dur
 baseDur = 1/8
 
-range = 2
+range = 8
 
 player1 :: SingularScore
-player1 = SS [] [Begin (C,5), Main.Rest, Begin (D,5)]
+player1 = SS [] [Begin (C,4), Main.Rest, Begin (D,4)]
 player2 :: SingularScore
-player2 = SS [] [Begin (A,5), Extend (A,5), Main.Rest]
+player2 = SS [] [Begin (A,4), Extend (A,4), Main.Rest]
 
 --
 -- Data definitions
@@ -133,7 +133,7 @@ instance Game Improvise where
   type State Improvise = RealizationState
   gameTree _ = stateTreeD who end markable registerMove (pay samplePrefs) start
 
-samplePrefs = [(4 , 4.0)]
+samplePrefs = [(4 , 4.0), (1, -1.0), (2, 10.0), (6, 5), (3, 2)]
 
 main = evalGame Improvise guessPlayers (run >> printSummaryOfGame 1)
    where run = step >>= maybe run (\p -> printGame >> playMusic >>return p)
@@ -142,8 +142,9 @@ main = evalGame Improvise guessPlayers (run >> printSummaryOfGame 1)
 
 -- Players
 guessPlayers :: [Hagl.Player Improvise]
-guessPlayers = ["A" ::: return (Begin (C, 4)), 
-                "B" ::: return (Begin (E, 4))]
+guessPlayers = ["A" ::: (periodic [Begin (C, 4), Main.Rest, Begin (A, 4)]),
+                "B" ::: minimax]
+--guessPlayers = ["A" ::: (periodic [Begin (C, 4), Main.Rest, Begin (A, 4), Extend (A, 4)]),
 
 -- Printing
 printGame :: GameM m Improvise => m ()
