@@ -22,9 +22,9 @@ baseDur = 1/8
 range = 2
 
 player1 :: SingularScore
-player1 = SS { realization = [], future = [Begin (C,5), Main.Rest, Begin (D,5)] }
+player1 = SS [] [Begin (C,5), Main.Rest, Begin (D,5)]
 player2 :: SingularScore
-player2 = SS { realization = [], future = [Begin (A,5), Extend (A,5), Main.Rest] }
+player2 = SS [] [Begin (A,5), Extend (A,5), Main.Rest]
 
 --
 -- Data definitions
@@ -48,8 +48,7 @@ data RealizationState = RS { scores       :: [SingularScore],
 
 
 start :: RealizationState
-start = RS { scores       = [player1, player2], 
-             accumulating = [] }
+start = RS [player1, player2] []
 
 who :: RealizationState -> PlayerID
 who rs = length (accumulating rs) + 1
@@ -59,30 +58,26 @@ markable rs = possMoves $ scores rs !! length (accumulating rs)
 --markable rs = [Begin (A,5)]
 
 registerMove :: RealizationState -> RMove -> RealizationState
-registerMove rs mv = let newRS = RS { scores       = scores rs, 
-                                      accumulating = mv : accumulating rs}
-                      in if length (accumulating newRS) == length (scores newRS)
-                         then progress newRS
-                         else newRS
+registerMove rs mv = let newRS = RS (scores rs) (mv : accumulating rs)
+                     in if length (accumulating newRS) == length (scores newRS)
+                        then progress newRS
+                        else newRS
 
 progress :: RealizationState -> RealizationState
 progress rs = let newPlayers = progressHelper (scores rs) (reverse (accumulating rs))
-              in RS {scores = newPlayers, accumulating = []}
+              in RS newPlayers []
 
 
 progressHelper :: [SingularScore] -> [RMove] -> [SingularScore]
 progressHelper []     []       = []
-progressHelper (p:ps) (mv:mvs) = SS { realization = mv:realization p, 
-                                      future      = drop 1 (future p)} :progressHelper ps mvs
+progressHelper (p:ps) (mv:mvs) = (SS (mv:realization p) (drop 1 (future p))) : progressHelper ps mvs
 
 possMoves :: SingularScore -> [RMove]
-possMoves SS { realization = _             , future = [] }         = []
-possMoves SS { realization = m@(Begin r:rs), future = Begin f:fs } = generateMoves f ++ rangedMoves m ++ [Extend r, Main.Rest]
-possMoves SS { realization = m             , future = Begin f:fs } = generateMoves f ++ rangedMoves m ++           [Main.Rest]
-possMoves SS { realization = m@(Begin r:rs), future = _ }          =                    rangedMoves m ++ [Extend r, Main.Rest]
-possMoves SS { realization = m             , future = _ }          =                    rangedMoves m ++           [Main.Rest]
--- TODO UNION THE LISTS!!!
-
+possMoves (SS _               []         ) = []
+possMoves (SS m@(Begin r:rs) (Begin f:fs)) = generateMoves f ++ rangedMoves m ++ [Extend r, Main.Rest]
+possMoves (SS m              (Begin f:fs)) = generateMoves f ++ rangedMoves m ++           [Main.Rest]
+possMoves (SS m@(Begin r:rs)  _          ) =                    rangedMoves m ++ [Extend r, Main.Rest]
+possMoves (SS m               _          ) =                    rangedMoves m ++           [Main.Rest]
 
 rangedMoves :: [RMove] -> [RMove]
 rangedMoves (Begin p:prev) = generateMoves p
@@ -100,7 +95,7 @@ generateMoves p =
 
 
 end :: RealizationState -> Bool
-end rs = null (accumulating rs) && null (future (head (scores rs)))
+end (RS scores accumulating) = null accumulating && null (future (head scores))
 
 pay :: RealizationState -> Payoff
 pay rs = ByPlayer $ replicate (length (scores rs)) dummyPayoff
