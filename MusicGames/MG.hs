@@ -3,15 +3,31 @@
 
 import Control.Monad.Trans (liftIO)
 import Control.Monad (liftM,liftM2,unless)
-import Data.List           (elemIndices, intersperse, transpose)
-import Text.Printf         (printf)
 import Hagl.History
 import Hagl
 import Euterpea
 import Translations
 import Debug.Trace
 
+-- test data and constants (probably to be removed later)
+octv :: Octave
+octv = 5
+
+dummyPayoff :: Float
+dummyPayoff = 1.0
+
 range = 2
+
+player1 :: SingularScore
+player1 = SS { realization = [], future = [Begin (C,5), Main.Rest, Begin (D,5)] }
+player2 :: SingularScore
+player2 = SS { realization = [], future = [Begin (A,5), Extend (A,5), Main.Rest] }
+
+--
+-- Data definitions
+--
+
+data Improvise = Improvise
 
 data RMove = Begin Pitch
            | Rest
@@ -19,57 +35,56 @@ data RMove = Begin Pitch
            -- invariant: Extend implies extending a previous "Begin"
            -- invariant: Extend must have the same pitch as the most recent "Begin"
 
-data SingularScore = SS { realization :: [RMove], future :: [RMove] } deriving Show
-data RealizationState = RS { scores :: [SingularScore], accumulating :: [RMove] } deriving Show
+data SingularScore = SS { realization :: [RMove], 
+                          future      :: [RMove] } 
+                          deriving Show
 
+data RealizationState = RS { scores       :: [SingularScore], 
+                             accumulating :: [RMove] } 
+                             deriving Show
 
-player1 :: SingularScore
-player1 = SS { realization = [], future = [Begin (C,5), Main.Rest, Begin (D,5)] }
-player2 :: SingularScore
-player2 = SS { realization = [], future = [Begin (A,5), Extend (A,5), Main.Rest] }
 
 start :: RealizationState
-start = RS { scores = [player1,player2] , accumulating = [] }
+start = RS { scores       = [player1, player2], 
+             accumulating = [] }
 
+who :: RealizationState -> PlayerID
+who rs = length (accumulating rs) + 1
+
+markable :: RealizationState -> [RMove]
+markable rs = possMoves $ scores rs !! length (accumulating rs)
+--markable rs = [Begin (A,5)]
 
 registerMove :: RealizationState -> RMove -> RealizationState
-registerMove rs mv = let newRS = RS { scores = (scores rs), 
-                                      accumulating = (mv : (accumulating rs))}
-                      in if (length (accumulating newRS) == length (scores newRS)) 
+registerMove rs mv = let newRS = RS { scores       = scores rs, 
+                                      accumulating = mv : accumulating rs}
+                      in if length (accumulating newRS) == length (scores newRS)
                          then progress newRS
                          else newRS
 
 progress :: RealizationState -> RealizationState
 progress rs = let newPlayers = progressHelper (scores rs) (reverse (accumulating rs))
-               in RS {scores = newPlayers, accumulating = []}
+              in RS {scores = newPlayers, accumulating = []}
 
 
 progressHelper :: [SingularScore] -> [RMove] -> [SingularScore]
-progressHelper [] [] = []
-progressHelper (p:ps) (mv:mvs) = (SS { realization = mv:(realization p), 
-                                       future      = (drop 1 (future p))})
-                                 : (progressHelper ps mvs)
-
-markable :: RealizationState -> [RMove]
-markable rs = possMoves ( (scores rs) !! (length (accumulating rs)))
---markable rs = [Begin (A,5)]
+progressHelper []     []       = []
+progressHelper (p:ps) (mv:mvs) = SS { realization = mv:realization p, 
+                                      future      = drop 1 (future p)} :progressHelper ps mvs
 
 possMoves :: SingularScore -> [RMove]
-possMoves SS { realization = _              , future = [] }           = []
-possMoves SS { realization = m@(Begin r:rs) , future = (Begin f):fs } = generateMoves f ++ rangedMoves m ++ [Extend r, Main.Rest]
-possMoves SS { realization = m              , future = (Begin f):fs } = generateMoves f ++ rangedMoves m ++           [Main.Rest]
-possMoves SS { realization = m@(Begin r:rs) , future = _ }            =                    rangedMoves m ++ [Extend r, Main.Rest]
-possMoves SS { realization = m              , future = _ }            =                    rangedMoves m ++           [Main.Rest]
+possMoves SS { realization = _             , future = [] }         = []
+possMoves SS { realization = m@(Begin r:rs), future = Begin f:fs } = generateMoves f ++ rangedMoves m ++ [Extend r, Main.Rest]
+possMoves SS { realization = m             , future = Begin f:fs } = generateMoves f ++ rangedMoves m ++           [Main.Rest]
+possMoves SS { realization = m@(Begin r:rs), future = _ }          =                    rangedMoves m ++ [Extend r, Main.Rest]
+possMoves SS { realization = m             , future = _ }          =                    rangedMoves m ++           [Main.Rest]
 -- TODO UNION THE LISTS!!!
 
 
 rangedMoves :: [RMove] -> [RMove]
-rangedMoves ((Begin p) :prev) = generateMoves p
-rangedMoves (       _  :prev) = rangedMoves prev
-rangedMoves                 _ = []                            
-
-who :: RealizationState -> PlayerID
-who rs = length (accumulating rs) + 1
+rangedMoves (Begin p:prev) = generateMoves p
+rangedMoves (_      :prev) = rangedMoves prev
+rangedMoves _              = []                            
 
 
 -- returns a list of RMoves range number of halfsteps above & below p
@@ -78,18 +93,14 @@ generateMoves p =
     let genMoves _ _ 0 = []
         genMoves p f n = let m = f p
                          in Begin m : genMoves m f (n-1)
-    in genMoves p halfStepUp range ++ [Begin p] ++ genMoves p halfStepDown range
+    in Begin p : genMoves p halfStepUp range ++ genMoves p halfStepDown range
 
 
 end :: RealizationState -> Bool
 end rs = null (accumulating rs) && null (future (head (scores rs)))
 
-x :: Float
-x = 1.0
 pay :: RealizationState -> Payoff
-pay rs = ByPlayer (take (length (scores rs)) (repeat x))
-
-data Improvise = Improvise
+pay rs = ByPlayer $ replicate (length (scores rs)) dummyPayoff
 
 -- Game instance
 instance Game Improvise where
@@ -98,44 +109,38 @@ instance Game Improvise where
   type State Improvise = RealizationState
   gameTree _ = stateTreeD who end markable registerMove pay start
 
-printGame :: GameM m Improvise => m ()
-printGame = gameState >>= liftIO . putStrLn . show
 
+main = evalGame Improvise guessPlayers (run >> printSummaryOfGame 1)
+   where run = step >>= maybe run (\p -> printGame >> playMusic >>return p)
+
+
+
+-- Players
 guessPlayers :: [Hagl.Player Improvise]
 guessPlayers = ["A" ::: return Main.Rest, "B" ::: return Main.Rest]
 
-main = evalGame Improvise guessPlayers (run >> printTranscript)
-   where run = printGame >> step >>= maybe run (\p -> printGame >> return p)
- 
--- | Print the transcript of the current game iteration, or if the game
---   has just finished, print the transcript of the last iteration.
-getHistory :: (GameM m g, Show (Move g)) => m ()
-getHistory = do
-    new <- isNewGame
-    n   <- gameNumber
-    printTranscriptOfGame (if new then n-1 else n)
+-- Printing
+printGame :: GameM m Improvise => m ()
+printGame = gameState >>= liftIO . putStrLn . show
 
--- | Print transcript of the given game.
-getHistoryOfGame :: (GameM m g, Show (Move g)) => Int -> m ()
-{--
-getHistoryOfGame n = do
-    (t,(_,p)) <- liftM (forGame n) history
-    ps <- players
-    printStr (showTranscript ps t)
-    --Euterpea.play (Prim (Note 1 (Ass, octv)))
+-- Music generation
+playMusic :: (GameM m g, Show (Move g)) => m ()
+playMusic = do
+    (mss, _) <- liftM (forGame 1) summaries
+    --let jams = composeMusic translate mss
+    --liftIO $ Euterpea.play $ jams
+    liftIO $ Euterpea.play $ note wn (Ass, octv)
     return ()
---}
-getHistoryOfGame n =
-    liftM (forGame n) history 
-        >>= (\tuple -> players 
-        >>= (\ps -> return ()))
-                {--
-        >>= (\ps -> printStr (showTranscript ps (fst tuple)) 
-        >> return ()))
-            --}
 
-octv :: Octave
-octv = 5
 
---main = do { putStrLn "Just MG" ;
---            Euterpea.play (Prim (Note 1 (Ass, octv)))}
+-- TODO: need a translation functions for [[RMove]] -> Music Pitch (or Music a)
+composeMusic :: Game g => ([[Move g]] -> Music Pitch) -> MoveSummary (Move g) -> Music Pitch
+composeMusic translate mss = translate (map everyTurn (everyPlayer mss))
+
+
+-- | String representation of a move summary.
+showMoveSummary :: (Game g, Show (Move g)) =>
+  ByPlayer (Hagl.Player g) -> MoveSummary (Move g) -> String
+showMoveSummary ps mss = (unlines . map row)
+                         (zip (everyPlayer ps) (map everyTurn (everyPlayer mss)))
+  where row (p,ms) = "  " ++ show p ++ " moves: " ++ showSeq (reverse (map show ms))
