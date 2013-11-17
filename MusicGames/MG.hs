@@ -16,6 +16,9 @@ octv = 5
 dummyPayoff :: Float
 dummyPayoff = 1.0
 
+baseDur :: Dur
+baseDur = 1/8
+
 range = 2
 
 player1 :: SingularScore
@@ -117,26 +120,50 @@ main = evalGame Improvise guessPlayers (run >> printSummaryOfGame 1)
 
 -- Players
 guessPlayers :: [Hagl.Player Improvise]
-guessPlayers = ["A" ::: return Main.Rest, "B" ::: return Main.Rest]
+guessPlayers = ["A" ::: return (Begin (C,5)), "B" ::: return Main.Rest]
 
 -- Printing
 printGame :: GameM m Improvise => m ()
 printGame = gameState >>= liftIO . putStrLn . show
 
 -- Music generation
-playMusic :: (GameM m g, Show (Move g)) => m ()
+playMusic :: (GameM m Improvise, Show (Move Improvise)) => m ()
 playMusic = do
     (mss, _) <- liftM (forGame 1) summaries
-    --let jams = composeMusic translate mss
-    --liftIO $ Euterpea.play $ jams
-    liftIO $ Euterpea.play $ note wn (Ass, octv)
+    liftIO $ Euterpea.play $ translate (getRS mss)
     return ()
 
 
--- TODO: need a translation functions for [[RMove]] -> Music Pitch (or Music a)
-composeMusic :: Game g => ([[Move g]] -> Music Pitch) -> MoveSummary (Move g) -> Music Pitch
-composeMusic translate mss = translate (map everyTurn (everyPlayer mss))
+--TODO MAKE SURE ALL LISTS ARE IN CORRECT ORDER -- MAY NEED TO REVERSE
 
+getRS :: MoveSummary (Move Improvise) -> RealizationState
+getRS mss = RS (map (\player -> SS (reverse (everyTurn player)) []) (everyPlayer mss)) []
+
+translate :: RealizationState -> Music Pitch
+translate (RS players _) = foldr (:=:) (Prim (Euterpea.Rest 0)) (map translateSinglePlayer players) 
+
+
+translateSinglePlayer :: SingularScore -> Music Pitch
+translateSinglePlayer (SS realization future) = 
+    let condenseMove ((Main.Rest, x):l)   Main.Rest       = (Main.Rest, x + 1):l
+        condenseMove ((Begin p1, x):l)   (Extend p2)      = 
+            if p1 == p2
+            then (Begin p1, x+1):l
+            else error "Extend must extend same pitch as most recent pitch"
+        condenseMove l mv                                 = (mv,1):l
+        condensed                                         = foldl condenseMove [] realization
+        condensedToMusic (Main.Rest, d)                   = Prim (Euterpea.Rest (d*baseDur))
+        condensedToMusic (Begin p, d)                     = Prim (Note (d*baseDur) p) 
+        musicMoves                                        = map condensedToMusic condensed
+    in  foldr (:+:) (Prim (Euterpea.Rest 0)) musicMoves
+
+
+
+
+--convert (pc, r, o) = Prim (Note r (pc, 5+o))
+
+--notes::Music Pitch
+--notes = foldr (:+:) (Prim (Rest 0)) (map convert x)
 
 -- | String representation of a move summary.
 showMoveSummary :: (Game g, Show (Move g)) =>
