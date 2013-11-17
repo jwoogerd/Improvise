@@ -125,7 +125,7 @@ printGame = gameState >>= liftIO . putStrLn . show
 playMusic :: (GameM m Improvise, Show (Move Improvise)) => m ()
 playMusic = do
     (mss, _) <- liftM (forGame 1) summaries
-    liftIO $ Euterpea.play $ translate (getRS mss)
+    liftIO $ Euterpea.play $ rsToMusic (getRS mss)
     return ()
 
 
@@ -134,12 +134,12 @@ playMusic = do
 getRS :: MoveSummary (Move Improvise) -> RealizationState
 getRS mss = RS (map (\player -> SS (reverse (everyTurn player)) []) (everyPlayer mss)) []
 
-translate :: RealizationState -> Music Pitch
-translate (RS players _) = foldr (:=:) (Prim (Euterpea.Rest 0)) (map translateSinglePlayer players) 
+rsToMusic :: RealizationState -> Music Pitch
+rsToMusic (RS players _) = foldr (:=:) (Prim (Euterpea.Rest 0)) (map ssToMusic players) 
 
 
-translateSinglePlayer :: SingularScore -> Music Pitch
-translateSinglePlayer (SS realization future) = 
+ssToMusic :: SingularScore -> Music Pitch
+ssToMusic (SS realization future) = 
     let condenseMove ((Main.Rest, x):l)   Main.Rest       = (Main.Rest, x + 1):l
         condenseMove ((Begin p1, x):l)   (Extend p2)      = 
             if p1 == p2
@@ -152,13 +152,6 @@ translateSinglePlayer (SS realization future) =
         musicMoves                                        = map condensedToMusic condensed
     in  foldr (:+:) (Prim (Euterpea.Rest 0)) musicMoves
 
-
-
-
---convert (pc, r, o) = Prim (Note r (pc, 5+o))
-
---notes::Music Pitch
---notes = foldr (:+:) (Prim (Rest 0)) (map convert x)
 
 -- | String representation of a move summary.
 showMoveSummary :: (Game g, Show (Move g)) =>
