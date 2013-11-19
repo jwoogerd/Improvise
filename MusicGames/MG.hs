@@ -19,12 +19,12 @@ dummyPayoff = 1.0
 baseDur :: Dur
 baseDur = 1/8
 
-range = 4
+range = 3
 
 player1 :: SingularScore
 player1 = SS [] [Begin (C,4), Extend (C, 4), Begin (D,4)]
 player2 :: SingularScore
-player2 = SS [] [Begin (D,4), Extend (F, 4), Main.Rest]
+player2 = SS [] [Begin (D,4), Extend (F, 4), Begin (C, 4)]
 
 --
 -- Data definitions
@@ -70,14 +70,14 @@ progress rs = let newPlayers = progressHelper (scores rs) (reverse (accumulating
 
 progressHelper :: [SingularScore] -> [RMove] -> [SingularScore]
 progressHelper []     []       = []
-progressHelper (p:ps) (mv:mvs) = (SS (mv:realization p) (drop 1 (future p))) : progressHelper ps mvs
+progressHelper (p:ps) (mv:mvs) = SS (mv:realization p) (drop 1 (future p)):progressHelper ps mvs
 
 possMoves :: SingularScore -> [RMove]
 possMoves (SS _               []         ) = []
-possMoves (SS m@(Begin r:rs) (Begin f:fs)) = generateMoves f ++ rangedMoves m ++ [Extend r, Main.Rest]
-possMoves (SS m              (Begin f:fs)) = generateMoves f ++ rangedMoves m ++           [Main.Rest]
-possMoves (SS m@(Begin r:rs)  _          ) =                    rangedMoves m ++ [Extend r, Main.Rest]
-possMoves (SS m               _          ) =                    rangedMoves m ++           [Main.Rest]
+possMoves (SS m@(Begin r:rs) (Begin f:fs)) = generateMoves f ++ rangedMoves m ++ [Main.Rest, Extend r]
+possMoves (SS m              (Begin f:fs)) = generateMoves f ++ rangedMoves m ++ [Main.Rest]
+possMoves (SS m@(Begin r:rs) (re:_      )) = re               : rangedMoves m ++ [Main.Rest, Extend r]
+possMoves (SS m              (re:_      )) = re               : rangedMoves m ++ [Main.Rest]
 
 rangedMoves :: [RMove] -> [RMove]
 rangedMoves (Begin p:prev) = generateMoves p
@@ -118,7 +118,7 @@ onePlayerPay _ [] _ = 0
 onePlayerPay (me:rs) others ps = foldr f 0 others + onePlayerPay rs (map tail others) ps
     where f (m:ms) acc = case rmoveInterval me m of
                             Nothing -> acc
-                            Just a  -> acc + intPref ps (abs a)
+                            Just a  -> acc + intPref ps a
 
 pay :: [IntPreference] -> RealizationState -> Payoff
 pay prefs rs = ByPlayer $ p [] (scores rs) prefs
@@ -135,17 +135,20 @@ instance Game Improvise where
   gameTree _ = stateTreeD who end markable registerMove (pay samplePrefs) start
 
 --samplePrefs = [(4 , 4.0), (1, 1.0), (2, 10.0), (6, 5), (3, 2), (0, 3)]
-samplePrefs = [(1 , 1.0), (2, 2.0), (3, 3.0), (4, 4), (5, 5), (6, 6)]
+--samplePrefs = [(1 , 1.0), (2, 2.0), (3, 3.0), (4, 4), (5, 5), (6, 6)]
+samplePrefs = [(1, -1), (2, -1), (3, 0), (4 , 5), (5, 0), (6, -1), (7, 5), (8, -1), (9, -1), (10, -1), (11, -1), (12, 3)]
 
-main = evalGame Improvise guessPlayers (run >> printSummaryOfGame 1)
+main = evalGame Improvise guessPlayers (run >> printSummary)
    where run = step >>= maybe run (\p -> printGame >> playMusic >>return p)
 
 
 
 -- Players
 guessPlayers :: [Hagl.Player Improvise]
-guessPlayers = ["A" ::: (periodic [Begin (C, 4), Main.Rest, Begin (D, 4)]),
+guessPlayers = ["A" ::: (periodic [Begin (C, 4), Begin (D, 4), Begin (E, 4), Begin (F, 4)]),
                 "B" ::: minimax]
+--guessPlayers = ["A" ::: minimax,
+--                "B" ::: minimax]
 --guessPlayers = ["A" ::: (periodic [Begin (C, 4), Main.Rest, Begin (A, 4), Extend (A, 4)]),
 
 -- Printing
@@ -181,7 +184,7 @@ ssToMusic (SS realization future) =
         condensedToMusic (Main.Rest, d)                   = Prim (Euterpea.Rest (d*baseDur))
         condensedToMusic (Begin p, d)                     = Prim (Note (d*baseDur) p) 
         musicMoves                                        = map condensedToMusic condensed
-    in  foldr (:+:) (Prim (Euterpea.Rest 0)) musicMoves
+    in  foldr (:+:) (Prim (Euterpea.Rest 0)) (reverse musicMoves)
 
 
 -- | String representation of a move summary.
