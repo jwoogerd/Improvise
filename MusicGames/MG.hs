@@ -8,6 +8,8 @@ import Hagl
 import Euterpea
 import Translations
 import Debug.Trace
+import Codec.Midi
+import Data.Ratio
 
 -- test data and constants (probably to be removed later)
 octv :: Octave
@@ -142,8 +144,8 @@ main = evalGame Improvise guessPlayers (run >> printSummaryOfGame 1)
 
 -- Players
 guessPlayers :: [Hagl.Player Improvise]
-guessPlayers = ["A" ::: return (Begin (C, 4)), 
-                "B" ::: return (Begin (E, 4))]
+guessPlayers = ["A" ::: return (Begin (C, 5)), 
+                "B" ::: return (Begin (A, 5))]
 
 -- Printing
 printGame :: GameM m Improvise => m ()
@@ -157,8 +159,7 @@ playMusic = do
     return ()
 
 
---TODO MAKE SURE ALL LISTS ARE IN CORRECT ORDER -- MAY NEED TO REVERSE
-
+-- convert from our representation to Euterpea Music
 getRS :: MoveSummary (Move Improvise) -> RealizationState
 getRS mss = RS (map (\player -> SS (reverse (everyTurn player)) []) (everyPlayer mss)) []
 
@@ -180,6 +181,24 @@ ssToMusic (SS realization future) =
         musicMoves                                        = map condensedToMusic condensed
     in  foldr (:+:) (Prim (Euterpea.Rest 0)) musicMoves
 
+-- convert from Euterpea Music to our representation
+okDur :: Dur -> Bool
+okDur d = elem (denominator d) [1,2,4,8]
+
+genRMoves :: RMove -> Dur -> [RMove]
+genRMoves r d = if okDur d then take (floor (d * (1/baseDur))) (repeat r) else error "invalid Duration"
+
+musicToRMoves :: Music Pitch -> [RMove]
+musicToRMoves (Prim (Note d p))          = Begin p : (genRMoves (Extend p) (d - baseDur))
+musicToRMoves (Prim (Euterpea.Rest d  )) = genRMoves  Main.Rest d
+musicToRMoves (m1 :+: m2)                = (musicToRMoves m1) ++ (musicToRMoves m2)
+musicToRMoves (m1 :=: m2)                = error "Cannot parse overlay"
+musicToRMoves (Modify c m1)              = trace ("Warning: discarding " ++ show c) musicToRMoves m1
+  
+musicToSS :: Music Pitch -> SingularScore
+musicToSS m = SS [] (reverse (musicToRMoves m))
+
+
 
 -- | String representation of a move summary.
 showMoveSummary :: (Game g, Show (Move g)) =>
@@ -187,3 +206,21 @@ showMoveSummary :: (Game g, Show (Move g)) =>
 showMoveSummary ps mss = (unlines . map row)
                          (zip (everyPlayer ps) (map everyTurn (everyPlayer mss)))
   where row (p,ms) = "  " ++ show p ++ " moves: " ++ showSeq (reverse (map show ms))
+
+
+-- starting to import music
+testFile :: IO (Either String Codec.Midi.Midi)
+testFile = importFile "test.MID"
+
+
+fromEitherMidi :: Either String Codec.Midi.Midi
+     -> Music Pitch
+fromEitherMidi (Right m) = 
+    let (m2, _, _) = fromMidi m
+    in mMap fst m2
+
+iomus = liftM fromEitherMidi testFile
+
+fromio = iomus >>= Euterpea.play
+
+
