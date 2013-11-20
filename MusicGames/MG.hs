@@ -60,15 +60,14 @@ markable :: RealizationState -> [RMove]
 markable rs = possMoves $ scores rs !! length (accumulating rs)
 
 registerMove :: RealizationState -> RMove -> RealizationState
-registerMove rs mv = let newRS = RS (scores rs) (mv : accumulating rs)
-                     in if length (accumulating newRS) == length (scores newRS)
-                        then progress newRS
-                        else newRS
-
-progress :: RealizationState -> RealizationState
-progress rs = let step p mv  = SS (mv: realization p) (tail $ future p)
-                  newPlayers = zipWith step (scores rs) (reverse $ accumulating rs)
-              in RS newPlayers []
+registerMove rs mv = 
+    if length (accumulating newRS) == length (scores newRS)
+    then progress newRS
+    else newRS
+        where newRS = RS (scores rs) (mv: accumulating rs)
+              progress rs = let step p mv  = SS (mv: realization p) (tail $ future p)
+                                newPlayers = zipWith step (scores rs) (reverse $ accumulating rs)
+                            in RS newPlayers []
 
 possMoves :: SingularScore -> [RMove]
 possMoves (SS _               []         ) = []
