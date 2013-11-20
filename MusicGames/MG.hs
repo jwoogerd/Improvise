@@ -29,6 +29,8 @@ player1 = SS [] [Begin (C,4), Extend (C, 4), Begin (D,4)]
 player2 :: SingularScore
 player2 = SS [] [Begin (D,4), Extend (D, 4), Begin (C, 4)]
 
+samplePrefs = [(1, -1), (2, -1), (3, 0), (4 , 5), (5, 0), (6, -1), (7, 5), (8, -1), (9, -1), (10, -1), (11, -1), (12, 3)]
+
 --
 -- Data definitions
 --
@@ -60,14 +62,13 @@ markable :: RealizationState -> [RMove]
 markable rs = possMoves $ scores rs !! length (accumulating rs)
 
 registerMove :: RealizationState -> RMove -> RealizationState
-registerMove rs mv = 
-    if length (accumulating newRS) == length (scores newRS)
-    then progress newRS
-    else newRS
-        where newRS = RS (scores rs) (mv: accumulating rs)
-              progress rs = let step p mv  = SS (mv: realization p) (tail $ future p)
-                                newPlayers = zipWith step (scores rs) (reverse $ accumulating rs)
-                            in RS newPlayers []
+registerMove rs mv = if length (accumulating newRS) == length (scores newRS)
+                     then progress newRS
+                     else newRS
+    where newRS = RS (scores rs) (mv: accumulating rs)
+          progress rs = let step p mv  = SS (mv: realization p) (tail $ future p)
+                            newPlayers = zipWith step (scores rs) (reverse $ accumulating rs)
+                        in RS newPlayers []
 
 possMoves :: SingularScore -> [RMove]
 possMoves (SS _               []         ) = []
@@ -87,8 +88,8 @@ generateMoves :: Pitch -> [RMove]
 generateMoves p =
     let genMoves _ _ 0 = []
         genMoves p f n = let m = f p
-                         in Begin m : genMoves m f (n-1)
-    in Begin p : genMoves p halfStepUp range ++ genMoves p halfStepDown range
+                         in Begin m: genMoves m f (n-1)
+    in Begin p: genMoves p halfStepUp range ++ genMoves p halfStepDown range
 
 
 end :: RealizationState -> Bool
@@ -96,7 +97,6 @@ end (RS scores accumulating) = null accumulating && null (future (head scores))
 
 type Interval = Int
 type IntPreference = (Interval, Float)
-
 
 intPref :: [IntPreference] -> Int -> Float
 intPref prefs i = foldr f 0 prefs
@@ -121,7 +121,7 @@ pay :: [IntPreference] -> RealizationState -> Payoff
 pay prefs rs = ByPlayer $ p [] (scores rs) prefs
     where p _      []         _     = []
           p before (me:after) prefs = 
-              onePlayerPay (realization me) (map realization (before ++ after)) prefs : 
+              onePlayerPay (realization me) (map realization (before ++ after)) prefs: 
               p (me:before) after prefs
 
 -- Game instance
@@ -131,9 +131,6 @@ instance Game Improvise where
   type State Improvise = RealizationState
   gameTree _ = stateTreeD who end markable registerMove (pay samplePrefs) start
 
---samplePrefs = [(4 , 4.0), (1, 1.0), (2, 10.0), (6, 5), (3, 2), (0, 3)]
---samplePrefs = [(1 , 1.0), (2, 2.0), (3, 3.0), (4, 4), (5, 5), (6, 6)]
-samplePrefs = [(1, -1), (2, -1), (3, 0), (4 , 5), (5, 0), (6, -1), (7, 5), (8, -1), (9, -1), (10, -1), (11, -1), (12, 3)]
 
 main = evalGame Improvise guessPlayers (run >> printSummary)
    where run = step >>= maybe run (\p -> printGame >> playMusic >>return p)
@@ -142,10 +139,11 @@ main = evalGame Improvise guessPlayers (run >> printSummary)
 
 -- Players
 guessPlayers :: [Hagl.Player Improvise]
-guessPlayers = [testPlayScore, testMinimax]
+guessPlayers = [testPlayScore, testPeriodic]
 
 testPeriodic :: Hagl.Player Improvise
-testPeriodic = "Miss Periodic" ::: periodic [Begin (C, 4), Begin (D, 4), Begin (E, 4), Begin (F, 4)]
+testPeriodic = "Miss Periodic" ::: 
+    periodic [Begin (C, 4), Begin (D, 4), Begin (E, 4), Begin (F, 4)]
 
 testMinimax :: Hagl.Player Improvise
 testMinimax  = "Mr. Minimax" ::: minimax
