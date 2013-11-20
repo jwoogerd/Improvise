@@ -3,6 +3,7 @@
 
 import Control.Monad.Trans (liftIO)
 import Control.Monad (liftM,liftM2,unless)
+import Control.Monad.State
 import Hagl.History
 import Hagl
 import Euterpea
@@ -19,12 +20,12 @@ dummyPayoff = 1.0
 baseDur :: Dur
 baseDur = 1/8
 
-range = 3
+range = 2
 
 player1 :: SingularScore
 player1 = SS [] [Begin (C,4), Extend (C, 4), Begin (D,4)]
 player2 :: SingularScore
-player2 = SS [] [Begin (D,4), Extend (F, 4), Begin (C, 4)]
+player2 = SS [] [Begin (D,4), Extend (D, 4), Begin (C, 4)]
 
 --
 -- Data definitions
@@ -66,7 +67,6 @@ registerMove rs mv = let newRS = RS (scores rs) (mv : accumulating rs)
 progress :: RealizationState -> RealizationState
 progress rs = let newPlayers = progressHelper (scores rs) (reverse (accumulating rs))
               in RS newPlayers []
-
 
 progressHelper :: [SingularScore] -> [RMove] -> [SingularScore]
 progressHelper []     []       = []
@@ -145,11 +145,20 @@ main = evalGame Improvise guessPlayers (run >> printSummary)
 
 -- Players
 guessPlayers :: [Hagl.Player Improvise]
-guessPlayers = ["A" ::: (periodic [Begin (C, 4), Begin (D, 4), Begin (E, 4), Begin (F, 4)]),
-                "B" ::: minimax]
---guessPlayers = ["A" ::: minimax,
---                "B" ::: minimax]
---guessPlayers = ["A" ::: (periodic [Begin (C, 4), Main.Rest, Begin (A, 4), Extend (A, 4)]),
+guessPlayers = [testPlayScore, testPlayScore]
+
+testPeriodic :: Hagl.Player Improvise
+testPeriodic = "Miss Periodic" ::: periodic [Begin (C, 4), Begin (D, 4), Begin (E, 4), Begin (F, 4)]
+
+testMinimax :: Hagl.Player Improvise
+testMinimax  = "Mr. Minimax" ::: minimax
+
+testPlayScore :: Hagl.Player Improvise
+testPlayScore = "Mr. Score" :::
+    do let ss = map future $ scores start
+       n  <- my numMoves
+       id <- myPlayerID
+       return ((ss !! (id-1)) !! n)
 
 -- Printing
 printGame :: GameM m Improvise => m ()
