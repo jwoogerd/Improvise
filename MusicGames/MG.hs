@@ -22,7 +22,7 @@ dummyPayoff = 1.0
 baseDur :: Dur
 baseDur = 1/8
 
-range = 2
+range = 4
 
 player1 :: SingularScore
 player1 = SS [] [Begin (C,4), Extend (C, 4), Begin (D,4)]
@@ -58,7 +58,6 @@ who rs = length (accumulating rs) + 1
 
 markable :: RealizationState -> [RMove]
 markable rs = possMoves $ scores rs !! length (accumulating rs)
---markable rs = [Begin (A,5)]
 
 registerMove :: RealizationState -> RMove -> RealizationState
 registerMove rs mv = let newRS = RS (scores rs) (mv : accumulating rs)
@@ -76,10 +75,10 @@ progressHelper (p:ps) (mv:mvs) = SS (mv:realization p) (drop 1 (future p)):progr
 
 possMoves :: SingularScore -> [RMove]
 possMoves (SS _               []         ) = []
-possMoves (SS m@(Begin r:rs) (Begin f:fs)) = generateMoves f ++ rangedMoves m ++ [Main.Rest, Extend r]
-possMoves (SS m              (Begin f:fs)) = generateMoves f ++ rangedMoves m ++ [Main.Rest]
-possMoves (SS m@(Begin r:rs) (re:_      )) = re               : rangedMoves m ++ [Main.Rest, Extend r]
-possMoves (SS m              (re:_      )) = re               : rangedMoves m ++ [Main.Rest]
+possMoves (SS m@(Begin r:rs) (Begin f:fs)) = Main.Rest: Extend r: rangedMoves m ++ generateMoves f 
+possMoves (SS m              (Begin f:fs)) = Main.Rest:           rangedMoves m ++ generateMoves f
+possMoves (SS m@(Begin r:rs)  _          ) = Main.Rest: Extend r: rangedMoves m
+possMoves (SS m               _          ) = Main.Rest:           rangedMoves m
 
 rangedMoves :: [RMove] -> [RMove]
 rangedMoves (Begin p:prev) = generateMoves p
@@ -147,7 +146,7 @@ main = evalGame Improvise guessPlayers (run >> printSummary)
 
 -- Players
 guessPlayers :: [Hagl.Player Improvise]
-guessPlayers = [testPlayScore, testPlayScore]
+guessPlayers = [testPlayScore, testMinimax]
 
 testPeriodic :: Hagl.Player Improvise
 testPeriodic = "Miss Periodic" ::: periodic [Begin (C, 4), Begin (D, 4), Begin (E, 4), Begin (F, 4)]
