@@ -66,12 +66,9 @@ registerMove rs mv = let newRS = RS (scores rs) (mv : accumulating rs)
                         else newRS
 
 progress :: RealizationState -> RealizationState
-progress rs = let newPlayers = progressHelper (scores rs) (reverse (accumulating rs))
+progress rs = let step p mv  = SS (mv: realization p) (tail $ future p)
+                  newPlayers = zipWith step (scores rs) (reverse $ accumulating rs)
               in RS newPlayers []
-
-progressHelper :: [SingularScore] -> [RMove] -> [SingularScore]
-progressHelper []     []       = []
-progressHelper (p:ps) (mv:mvs) = SS (mv:realization p) (drop 1 (future p)):progressHelper ps mvs
 
 possMoves :: SingularScore -> [RMove]
 possMoves (SS _               []         ) = []
