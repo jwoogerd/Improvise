@@ -22,15 +22,21 @@ dummyPayoff = 1.0
 baseDur :: Dur
 baseDur = 1/8
 
-range = 4
+range = 2
 
 player1 :: SingularScore
-player1 = SS [] [Begin (C,4), Extend (C, 4), Begin (D,4)]
+player1 = SS [] [Begin (A,4), Extend (A, 4), Begin (G,4), Extend (G, 4),
+                 Begin (F, 4), Extend (F, 4), Begin (G, 4), Extend (G, 4),
+                 Begin (A, 4), Extend (A, 4), Begin (A, 4), Extend (A, 4),
+                 Begin (A, 4), Extend (A, 4), Extend (A, 4), Extend (A, 4)]
 player2 :: SingularScore
-player2 = SS [] [Begin (D,4), Extend (D, 4), Begin (C, 4)]
+player2 = SS [] (replicate 16 (Begin (C, 4)))
+--player2 = SS [] [Begin (D,4), Extend (D, 4), Begin (C, 4)]
 
-samplePrefs = [(1, -1), (2, -1), (3, 0), (4 , 5), (5, 0), (6, -1), (7, 5), (8, -1), (9, -1), (10, -1), (11, -1), (12, 3)]
+--samplePrefs = [(1, -1), (2, -1), (3, 0), (4 , 5), (5, 0), (6, -1), (7, 5), (8, -1), (9, -1), (10, -1), (11, -1), (12, 3)]
 
+player1Prefs = [(1, -1), (2, -1), (3, 1)]
+player2Prefs = [(4, 1), (5, 1), (6, -1)]
 --
 -- Data definitions
 --
@@ -53,7 +59,7 @@ data RealizationState = RS { scores       :: [SingularScore],
 
 
 start :: RealizationState
-start = RS [player1, player2] []
+start = RS [player2, player1] []
 
 who :: RealizationState -> PlayerID
 who rs = length (accumulating rs) + 1
@@ -75,6 +81,7 @@ possMoves (SS _               []         ) = []
 possMoves (SS m@(Begin r:rs) (Begin f:fs)) = Main.Rest: Extend r: rangedMoves m ++ generateMoves f 
 possMoves (SS m              (Begin f:fs)) = Main.Rest:           rangedMoves m ++ generateMoves f
 possMoves (SS m@(Begin r:rs)  _          ) = Main.Rest: Extend r: rangedMoves m
+possMoves (SS m@(Extend r:rs) _          ) = Main.Rest: Extend r: rangedMoves m
 possMoves (SS m               _          ) = Main.Rest:           rangedMoves m
 
 rangedMoves :: [RMove] -> [RMove]
@@ -117,19 +124,19 @@ onePlayerPay (me:rs) others ps = foldr f 0 others + onePlayerPay rs (map tail ot
                             Nothing -> acc
                             Just a  -> acc + intPref ps a
 
-pay :: [IntPreference] -> RealizationState -> Payoff
+pay :: [[IntPreference]] -> RealizationState -> Payoff
 pay prefs rs = ByPlayer $ p [] (scores rs) prefs
     where p _      []         _     = []
-          p before (me:after) prefs = 
-              onePlayerPay (realization me) (map realization (before ++ after)) prefs: 
-              p (me:before) after prefs
+          p before (me:after) (myPrefs:ps) = 
+              onePlayerPay (realization me) (map realization (before ++ after)) myPrefs: 
+              p (me:before) after ps
 
 -- Game instance
 instance Game Improvise where
   type TreeType Improvise = Discrete
   type Move  Improvise = RMove
   type State Improvise = RealizationState
-  gameTree _ = stateTreeD who end markable registerMove (pay samplePrefs) start
+  gameTree _ = stateTreeD who end markable registerMove (pay [player1Prefs, player2Prefs]) start
 
 
 main = evalGame Improvise guessPlayers (run >> printSummary)
@@ -139,7 +146,7 @@ main = evalGame Improvise guessPlayers (run >> printSummary)
 
 -- Players
 guessPlayers :: [Hagl.Player Improvise]
-guessPlayers = [testPlayScore, testPeriodic]
+guessPlayers = [testPlayScore, testMinimax]
 
 testPeriodic :: Hagl.Player Improvise
 testPeriodic = "Miss Periodic" ::: 
