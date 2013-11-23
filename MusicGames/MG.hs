@@ -59,12 +59,7 @@ data RealizationState = RS { scores       :: [SingularScore],
 
 
 start :: RealizationState
-<<<<<<< HEAD
---start = RS [player1, player2] []
-start = RS [player1] []
-=======
 start = RS [player2, player1] []
->>>>>>> 391839a4c84b12a55c6b22cd89f7db1372bbdff0
 
 who :: RealizationState -> PlayerID
 who rs = length (accumulating rs) + 1
@@ -136,7 +131,6 @@ pay prefs rs = ByPlayer $ p [] (scores rs) prefs
               onePlayerPay (realization me) (map realization (before ++ after)) myPrefs: 
               p (me:before) after ps
 
-class 
 
 
 -- Game instance
@@ -154,13 +148,7 @@ main = evalGame Improvise guessPlayers (run >> printSummary)
 
 -- Players
 guessPlayers :: [Hagl.Player Improvise]
-<<<<<<< HEAD
-guessPlayers = ["A" ::: (periodic [Begin (C, 4), Begin (D, 4), Begin (E, 4), Begin (F, 4)])]
---                "B" ::: minimax]
---guessPlayers = ["A" ::: minimax,
---                "B" ::: minimax]
---guessPlayers = ["A" ::: (periodic [Begin (C, 4), Main.Rest, Begin (A, 4), Extend (A, 4)]),
-=======
+--guessPlayers = ["A" ::: (periodic [Begin (C, 4), Begin (D, 4), Begin (E, 4), Begin (F, 4)])]
 guessPlayers = [testPlayScore, testMinimax]
 
 testPeriodic :: Hagl.Player Improvise
@@ -176,7 +164,6 @@ testPlayScore = "Mr. Score" :::
        n  <- my numMoves
        id <- myPlayerID
        return ((ss !! (id-1)) !! n)
->>>>>>> 391839a4c84b12a55c6b22cd89f7db1372bbdff0
 
 -- Printing
 printGame :: GameM m Improvise => m ()
@@ -253,5 +240,5 @@ iomus = liftM fromEitherMidi testFile
 
 fromio = iomus >>= Euterpea.play
 
-main = evalGame Improvise guessPlayers (run >> printSummary)
-   where run = step >>= maybe run (\p -> printGame >> playMusic >>return p)
+--main = evalGame Improvise guessPlayers (run >> printSummary)
+--   where run = step >>= maybe run (\p -> printGame >> playMusic >>return p)
