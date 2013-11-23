@@ -50,7 +50,8 @@ data RealizationState = RS { scores       :: [SingularScore],
 
 
 start :: RealizationState
-start = RS [player1, player2] []
+--start = RS [player1, player2] []
+start = RS [player1] []
 
 who :: RealizationState -> PlayerID
 who rs = length (accumulating rs) + 1
@@ -129,6 +130,9 @@ pay prefs rs = ByPlayer $ p [] (scores rs) prefs
               onePlayerPay (realization me) (map realization (before ++ after)) prefs : 
               p (me:before) after prefs
 
+class 
+
+
 -- Game instance
 instance Game Improvise where
   type TreeType Improvise = Discrete
@@ -147,8 +151,8 @@ main = evalGame Improvise guessPlayers (run >> printSummary)
 
 -- Players
 guessPlayers :: [Hagl.Player Improvise]
-guessPlayers = ["A" ::: (periodic [Begin (C, 4), Begin (D, 4), Begin (E, 4), Begin (F, 4)]),
-                "B" ::: minimax]
+guessPlayers = ["A" ::: (periodic [Begin (C, 4), Begin (D, 4), Begin (E, 4), Begin (F, 4)])]
+--                "B" ::: minimax]
 --guessPlayers = ["A" ::: minimax,
 --                "B" ::: minimax]
 --guessPlayers = ["A" ::: (periodic [Begin (C, 4), Main.Rest, Begin (A, 4), Extend (A, 4)]),
@@ -218,7 +222,6 @@ showMoveSummary ps mss = (unlines . map row)
 testFile :: IO (Either String Codec.Midi.Midi)
 testFile = importFile "test.MID"
 
-
 fromEitherMidi :: Either String Codec.Midi.Midi
      -> Music Pitch
 fromEitherMidi (Right m) = 
@@ -229,4 +232,5 @@ iomus = liftM fromEitherMidi testFile
 
 fromio = iomus >>= Euterpea.play
 
-
+main = evalGame Improvise guessPlayers (run >> printSummary)
+   where run = step >>= maybe run (\p -> printGame >> playMusic >>return p)
