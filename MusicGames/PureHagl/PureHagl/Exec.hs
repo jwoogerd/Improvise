@@ -28,7 +28,9 @@ type History mv = ByGame (Transcript mv, Summary mv)
 -- | Game 
 
 class Game g where
+    type TreeType = * -> * 
     type Move g
+    gameTree :: g -> (TreeType g) (Move g)
 
 data Action = Decision PlayerID | Payoff Payoff deriving Eq
 
