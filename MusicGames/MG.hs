@@ -3,6 +3,7 @@
 
 import Control.Monad.Trans (liftIO)
 import Control.Monad (liftM,liftM2,unless)
+import Control.Monad.State
 import Hagl.History
 import Hagl
 import Euterpea
@@ -21,13 +22,21 @@ dummyPayoff = 1.0
 baseDur :: Dur
 baseDur = 1/8
 
-range = 3
+range = 2
 
 player1 :: SingularScore
-player1 = SS [] [Begin (C,4), Extend (C, 4), Begin (D,4)]
+player1 = SS [] [Begin (A,4), Extend (A, 4), Begin (G,4), Extend (G, 4),
+                 Begin (F, 4), Extend (F, 4), Begin (G, 4), Extend (G, 4),
+                 Begin (A, 4), Extend (A, 4), Begin (A, 4), Extend (A, 4),
+                 Begin (A, 4), Extend (A, 4), Extend (A, 4), Extend (A, 4)]
 player2 :: SingularScore
-player2 = SS [] [Begin (D,4), Extend (F, 4), Begin (C, 4)]
+player2 = SS [] (replicate 16 (Begin (C, 4)))
+--player2 = SS [] [Begin (D,4), Extend (D, 4), Begin (C, 4)]
 
+--samplePrefs = [(1, -1), (2, -1), (3, 0), (4 , 5), (5, 0), (6, -1), (7, 5), (8, -1), (9, -1), (10, -1), (11, -1), (12, 3)]
+
+player1Prefs = [(1, -1), (2, -1), (3, 1)]
+player2Prefs = [(4, 1), (5, 1), (6, -1)]
 --
 -- Data definitions
 --
@@ -50,37 +59,35 @@ data RealizationState = RS { scores       :: [SingularScore],
 
 
 start :: RealizationState
+<<<<<<< HEAD
 --start = RS [player1, player2] []
 start = RS [player1] []
+=======
+start = RS [player2, player1] []
+>>>>>>> 391839a4c84b12a55c6b22cd89f7db1372bbdff0
 
 who :: RealizationState -> PlayerID
 who rs = length (accumulating rs) + 1
 
 markable :: RealizationState -> [RMove]
 markable rs = possMoves $ scores rs !! length (accumulating rs)
---markable rs = [Begin (A,5)]
 
 registerMove :: RealizationState -> RMove -> RealizationState
-registerMove rs mv = let newRS = RS (scores rs) (mv : accumulating rs)
-                     in if length (accumulating newRS) == length (scores newRS)
-                        then progress newRS
-                        else newRS
-
-progress :: RealizationState -> RealizationState
-progress rs = let newPlayers = progressHelper (scores rs) (reverse (accumulating rs))
-              in RS newPlayers []
-
-
-progressHelper :: [SingularScore] -> [RMove] -> [SingularScore]
-progressHelper []     []       = []
-progressHelper (p:ps) (mv:mvs) = SS (mv:realization p) (drop 1 (future p)):progressHelper ps mvs
+registerMove rs mv = if length (accumulating newRS) == length (scores newRS)
+                     then progress newRS
+                     else newRS
+    where newRS = RS (scores rs) (mv: accumulating rs)
+          progress rs = let step p mv  = SS (mv: realization p) (tail $ future p)
+                            newPlayers = zipWith step (scores rs) (reverse $ accumulating rs)
+                        in RS newPlayers []
 
 possMoves :: SingularScore -> [RMove]
 possMoves (SS _               []         ) = []
-possMoves (SS m@(Begin r:rs) (Begin f:fs)) = generateMoves f ++ rangedMoves m ++ [Main.Rest, Extend r]
-possMoves (SS m              (Begin f:fs)) = generateMoves f ++ rangedMoves m ++ [Main.Rest]
-possMoves (SS m@(Begin r:rs) (re:_      )) = re               : rangedMoves m ++ [Main.Rest, Extend r]
-possMoves (SS m              (re:_      )) = re               : rangedMoves m ++ [Main.Rest]
+possMoves (SS m@(Begin r:rs) (Begin f:fs)) = Main.Rest: Extend r: rangedMoves m ++ generateMoves f 
+possMoves (SS m              (Begin f:fs)) = Main.Rest:           rangedMoves m ++ generateMoves f
+possMoves (SS m@(Begin r:rs)  _          ) = Main.Rest: Extend r: rangedMoves m
+possMoves (SS m@(Extend r:rs) _          ) = Main.Rest: Extend r: rangedMoves m
+possMoves (SS m               _          ) = Main.Rest:           rangedMoves m
 
 rangedMoves :: [RMove] -> [RMove]
 rangedMoves (Begin p:prev) = generateMoves p
@@ -93,8 +100,8 @@ generateMoves :: Pitch -> [RMove]
 generateMoves p =
     let genMoves _ _ 0 = []
         genMoves p f n = let m = f p
-                         in Begin m : genMoves m f (n-1)
-    in Begin p : genMoves p halfStepUp range ++ genMoves p halfStepDown range
+                         in Begin m: genMoves m f (n-1)
+    in Begin p: genMoves p halfStepUp range ++ genMoves p halfStepDown range
 
 
 end :: RealizationState -> Bool
@@ -102,7 +109,6 @@ end (RS scores accumulating) = null accumulating && null (future (head scores))
 
 type Interval = Int
 type IntPreference = (Interval, Float)
-
 
 intPref :: [IntPreference] -> Int -> Float
 intPref prefs i = foldr f 0 prefs
@@ -123,12 +129,12 @@ onePlayerPay (me:rs) others ps = foldr f 0 others + onePlayerPay rs (map tail ot
                             Nothing -> acc
                             Just a  -> acc + intPref ps a
 
-pay :: [IntPreference] -> RealizationState -> Payoff
+pay :: [[IntPreference]] -> RealizationState -> Payoff
 pay prefs rs = ByPlayer $ p [] (scores rs) prefs
     where p _      []         _     = []
-          p before (me:after) prefs = 
-              onePlayerPay (realization me) (map realization (before ++ after)) prefs : 
-              p (me:before) after prefs
+          p before (me:after) (myPrefs:ps) = 
+              onePlayerPay (realization me) (map realization (before ++ after)) myPrefs: 
+              p (me:before) after ps
 
 class 
 
@@ -138,11 +144,8 @@ instance Game Improvise where
   type TreeType Improvise = Discrete
   type Move  Improvise = RMove
   type State Improvise = RealizationState
-  gameTree _ = stateTreeD who end markable registerMove (pay samplePrefs) start
+  gameTree _ = stateTreeD who end markable registerMove (pay [player1Prefs, player2Prefs]) start
 
---samplePrefs = [(4 , 4.0), (1, 1.0), (2, 10.0), (6, 5), (3, 2), (0, 3)]
---samplePrefs = [(1 , 1.0), (2, 2.0), (3, 3.0), (4, 4), (5, 5), (6, 6)]
-samplePrefs = [(1, -1), (2, -1), (3, 0), (4 , 5), (5, 0), (6, -1), (7, 5), (8, -1), (9, -1), (10, -1), (11, -1), (12, 3)]
 
 main = evalGame Improvise guessPlayers (run >> printSummary)
    where run = step >>= maybe run (\p -> printGame >> playMusic >>return p)
@@ -151,11 +154,29 @@ main = evalGame Improvise guessPlayers (run >> printSummary)
 
 -- Players
 guessPlayers :: [Hagl.Player Improvise]
+<<<<<<< HEAD
 guessPlayers = ["A" ::: (periodic [Begin (C, 4), Begin (D, 4), Begin (E, 4), Begin (F, 4)])]
 --                "B" ::: minimax]
 --guessPlayers = ["A" ::: minimax,
 --                "B" ::: minimax]
 --guessPlayers = ["A" ::: (periodic [Begin (C, 4), Main.Rest, Begin (A, 4), Extend (A, 4)]),
+=======
+guessPlayers = [testPlayScore, testMinimax]
+
+testPeriodic :: Hagl.Player Improvise
+testPeriodic = "Miss Periodic" ::: 
+    periodic [Begin (C, 4), Begin (D, 4), Begin (E, 4), Begin (F, 4)]
+
+testMinimax :: Hagl.Player Improvise
+testMinimax  = "Mr. Minimax" ::: minimax
+
+testPlayScore :: Hagl.Player Improvise
+testPlayScore = "Mr. Score" :::
+    do let ss = map future $ scores start
+       n  <- my numMoves
+       id <- myPlayerID
+       return ((ss !! (id-1)) !! n)
+>>>>>>> 391839a4c84b12a55c6b22cd89f7db1372bbdff0
 
 -- Printing
 printGame :: GameM m Improvise => m ()
