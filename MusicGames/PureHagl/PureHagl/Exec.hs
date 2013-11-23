@@ -1,4 +1,4 @@
-{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE TypeFamilies, RankNTypes #-}
 
 module PureHagl.Exec where
 
@@ -30,29 +30,54 @@ type History mv = ByGame (Transcript mv, Summary mv)
 class Game g where
     type TreeType g :: * -> * 
     type Move g
-    type State g
     gameTree :: g -> (TreeType g) (Move g)
 
-data Action = Decision PlayerID | Payoff Payoff deriving Eq
+data Node = Decision PlayerID | Payoff Payoff deriving Eq
 
 -- | Exec 
 data GameState g = GameState 
     { game       :: g 
-    , state      :: State g
-    , location   :: Action
-    , players    :: ByPlayer (Player g)
+    , location   :: Node
+    , players    :: [Player g]
     , transcript :: Transcript (Move g)
     , history    :: History (Move g)
     , numMoves   :: ByPlayer Int
+    , transition :: Transition g
     , gameNumber :: Int }
 
 type Transition g = GameState g -> g
 
-type Exec g = (GameState g, Transition g)
+execGame :: Game g => g -> [Player g] -> Transition g -> Run g -> 
+    GameState g
+execGame g ps t r  = initGame g ps t 1
 
-execGame :: Game g => g -> [Player g] -> Transition g -> GameState g
-execGame g ps t = initExec g ps
-
-initExec :: Game g => g -> [Player g] -> GameState g
-initExec g ps = GameState g (ByPlayer ps) [] (ByGame []) ms 1
+initGame :: Game g => g -> [Player g] -> Transition g -> Int ->  GameState g
+initGame g ps t i = GameState g (Decision 1) ps [] (ByGame []) ms t i
     where ms = ByPlayer (replicate (length ps) 0)
+
+--
+type Run g = Game g => GameState g -> GameState g
+
+-- one step in the game
+step :: Run g 
+step gs =
+    let t          = transition gs
+        gameNum    = gameNumber gs + 1
+        gameState  = case location gs of 
+            Payoff _   -> initGame (t gs) (players gs) t gameNum
+            Decision _ -> gs
+    in gameState --ACTUALLY MOVE FORWARD
+
+runN :: Run g -> Int -> Run g
+runN toRun i = 
+    case i of
+        1 -> toRun
+        _ -> toRun . (runN toRun (i-1))
+
+-- location (finish gs)  :: Payoff Payoff
+finish :: Run g
+finish gs =
+    case location gs of
+        Payoff _   -> gs
+        Decision _ -> finish (step gs)
+        
