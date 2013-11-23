@@ -30,6 +30,7 @@ type History mv = ByGame (Transcript mv, Summary mv)
 class Game g where
     type TreeType g :: * -> * 
     type Move g
+    type State g
     gameTree :: g -> (TreeType g) (Move g)
 
 data Action = Decision PlayerID | Payoff Payoff deriving Eq
@@ -37,6 +38,8 @@ data Action = Decision PlayerID | Payoff Payoff deriving Eq
 -- | Exec 
 data GameState g = GameState 
     { game       :: g 
+    , state      :: State g
+    , location   :: Action
     , players    :: ByPlayer (Player g)
     , transcript :: Transcript (Move g)
     , history    :: History (Move g)
@@ -45,7 +48,7 @@ data GameState g = GameState
 
 type Transition g = GameState g -> g
 
-type Exec g = (GameState g, Action, Transition g)
+type Exec g = (GameState g, Transition g)
 
 execGame :: Game g => g -> [Player g] -> Transition g -> GameState g
 execGame g ps t = initExec g ps
