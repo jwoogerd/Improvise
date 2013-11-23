@@ -28,7 +28,7 @@ type History mv = ByGame (Transcript mv, Summary mv)
 -- | Game 
 
 class Game g where
-    type TreeType = * -> * 
+    type TreeType g :: * -> * 
     type Move g
     gameTree :: g -> (TreeType g) (Move g)
 
