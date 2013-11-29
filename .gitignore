@@ -6,6 +6,9 @@ proposal/*.bbl
 proposal/*.blg
 proposal/*.run.xml
 Euterpea
+Hagl
+PureHagl
+MG
 dist
 *.o
 *.hi
