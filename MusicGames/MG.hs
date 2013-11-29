@@ -1,23 +1,15 @@
 {-# LANGUAGE FlexibleContexts, TypeFamilies #-}
-
-
-import Control.Monad.Trans (liftIO)
-import Control.Monad (liftM,liftM2,unless)
-import Control.Monad.State
-import Hagl.History
-import Hagl
+import PureHagl
 import Euterpea
+import Data.List    (union)
+
 import Translations
-import Debug.Trace
+
 import Codec.Midi
-import Data.Ratio
+import Debug.Trace  (trace)
+import Data.Ratio   (denominator)
+import Control.Monad (liftM)
 
--- test data and constants (probably to be removed later)
-octv :: Octave
-octv = 5
-
-dummyPayoff :: Float
-dummyPayoff = 1.0
 
 baseDur :: Dur
 baseDur = 1/8
@@ -31,12 +23,12 @@ player1 = SS [] [Begin (A,4), Extend (A, 4), Begin (G,4), Extend (G, 4),
                  Begin (A, 4), Extend (A, 4), Extend (A, 4), Extend (A, 4)]
 player2 :: SingularScore
 player2 = SS [] (replicate 16 (Begin (C, 4)))
---player2 = SS [] [Begin (D,4), Extend (D, 4), Begin (C, 4)]
 
 --samplePrefs = [(1, -1), (2, -1), (3, 0), (4 , 5), (5, 0), (6, -1), (7, 5), (8, -1), (9, -1), (10, -1), (11, -1), (12, 3)]
 
 player1Prefs = [(1, -1), (2, -1), (3, 1)]
 player2Prefs = [(4, 1), (5, 1), (6, -1)]
+
 --
 -- Data definitions
 --
@@ -78,11 +70,11 @@ registerMove rs mv = if length (accumulating newRS) == length (scores newRS)
 
 possMoves :: SingularScore -> [RMove]
 possMoves (SS _               []         ) = []
-possMoves (SS m@(Begin r:rs) (Begin f:fs)) = Main.Rest: Extend r: rangedMoves m ++ generateMoves f 
-possMoves (SS m              (Begin f:fs)) = Main.Rest:           rangedMoves m ++ generateMoves f
-possMoves (SS m@(Begin r:rs)  _          ) = Main.Rest: Extend r: rangedMoves m
-possMoves (SS m@(Extend r:rs) _          ) = Main.Rest: Extend r: rangedMoves m
-possMoves (SS m               _          ) = Main.Rest:           rangedMoves m
+possMoves (SS m@(Begin r:rs) (Begin f:fs)) = union (Main.Rest: Extend r: rangedMoves m) (generateMoves f) 
+possMoves (SS m              (Begin f:fs)) = union (Main.Rest:           rangedMoves m) (generateMoves f)
+possMoves (SS m@(Begin r:rs)  _          ) =        Main.Rest: Extend r: rangedMoves m
+possMoves (SS m@(Extend r:rs) _          ) =        Main.Rest: Extend r: rangedMoves m
+possMoves (SS m               _          ) =        Main.Rest:           rangedMoves m
 
 rangedMoves :: [RMove] -> [RMove]
 rangedMoves (Begin p:prev) = generateMoves p
@@ -131,24 +123,26 @@ pay prefs rs = ByPlayer $ p [] (scores rs) prefs
               onePlayerPay (realization me) (map realization (before ++ after)) myPrefs: 
               p (me:before) after ps
 
-
-
--- Game instance
 instance Game Improvise where
-  type TreeType Improvise = Discrete
-  type Move  Improvise = RMove
-  type State Improvise = RealizationState
-  gameTree _ = stateTreeD who end markable registerMove (pay [player1Prefs, player2Prefs]) start
+    type TreeType Improvise = Discrete
+    type Move Improvise = RMove
+    type State Improvise = RealizationState
+    gameTree _ = stateTreeD who end markable registerMove (pay [player1Prefs, player2Prefs]) start 
 
 
-main = evalGame Improvise guessPlayers (run >> printSummary)
-   where run = step >>= maybe run (\p -> printGame >> playMusic >>return p)
+music = execGame Improvise players game step
 
+--main = playMusic music
 
 
 -- Players
+
+players :: [PureHagl.Player Improvise]
+players = [PureHagl.Player "me" minimax, PureHagl.Player "you" minimax]
+
+{-
+    --Don't have strategies for these kind of players yet
 guessPlayers :: [Hagl.Player Improvise]
---guessPlayers = ["A" ::: (periodic [Begin (C, 4), Begin (D, 4), Begin (E, 4), Begin (F, 4)])]
 guessPlayers = [testPlayScore, testMinimax]
 
 testPeriodic :: Hagl.Player Improvise
@@ -164,22 +158,31 @@ testPlayScore = "Mr. Score" :::
        n  <- my numMoves
        id <- myPlayerID
        return ((ss !! (id-1)) !! n)
+-}
 
+{-
 -- Printing
 printGame :: GameM m Improvise => m ()
 printGame = gameState >>= liftIO . putStrLn . show
 
+-}
 -- Music generation
-playMusic :: (GameM m Improvise, Show (Move Improvise)) => m ()
-playMusic = do
-    (mss, _) <- liftM (forGame 1) summaries
-    liftIO $ Euterpea.play $ rsToMusic (getRS mss)
-    return ()
+{-
+playMusic :: (GameState Improvise) => IO ()
+playMusic gs = Euterpea.play $ rsToMusic (getRS (forGame 1 (_summaries . _history gs)))
+-}
 
 
 -- convert from our representation to Euterpea Music
 getRS :: MoveSummary (Move Improvise) -> RealizationState
-getRS mss = RS (map (\player -> SS (reverse (everyTurn player)) []) (everyPlayer mss)) []
+getRS mss = RS (map 
+                    (\player -> SS (reverse (everyTurn player)) []) 
+                    (everyPlayer mss)) 
+               []
+    where btmoves :: [ByTurn (Move Improvise)]
+          btmoves = everyPlayer mss
+          getMoves :: ByTurn (Move Improvise) -> SingularScore
+          getMoves player = SS (reverse (everyTurn player)) []
 
 rsToMusic :: RealizationState -> Music Pitch
 rsToMusic (RS players _) = foldr (:=:) (Prim (Euterpea.Rest 0)) (map ssToMusic players) 
@@ -217,7 +220,7 @@ musicToSS :: Music Pitch -> SingularScore
 musicToSS m = SS [] (reverse (musicToRMoves m))
 
 
-
+{-
 -- | String representation of a move summary.
 showMoveSummary :: (Game g, Show (Move g)) =>
   ByPlayer (Hagl.Player g) -> MoveSummary (Move g) -> String
@@ -225,10 +228,11 @@ showMoveSummary ps mss = (unlines . map row)
                          (zip (everyPlayer ps) (map everyTurn (everyPlayer mss)))
   where row (p,ms) = "  " ++ show p ++ " moves: " ++ showSeq (reverse (map show ms))
 
-
+-}
 -- starting to import music
 testFile :: IO (Either String Codec.Midi.Midi)
 testFile = importFile "test.MID"
+
 
 fromEitherMidi :: Either String Codec.Midi.Midi
      -> Music Pitch
@@ -240,5 +244,4 @@ iomus = liftM fromEitherMidi testFile
 
 fromio = iomus >>= Euterpea.play
 
---main = evalGame Improvise guessPlayers (run >> printSummary)
---   where run = step >>= maybe run (\p -> printGame >> playMusic >>return p)
+
