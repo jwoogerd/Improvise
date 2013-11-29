@@ -154,28 +154,35 @@ music = execGame Improvise players game step
 -- * Players
 --
 
-players :: [PureHagl.Player Improvise]
-players = [PureHagl.Player "me" minimax, PureHagl.Player "you" minimax]
+-- | Two musicians playing minimax against each other.
+miniVsMini :: [PureHagl.Player Improvise]
+miniVsMini = [PureHagl.Player "me" minimax, PureHagl.Player "you" minimax]
 
-{-
-    --Don't have strategies for these kind of players yet
-guessPlayers :: [Hagl.Player Improvise]
-guessPlayers = [testPlayScore, testMinimax]
+-- | Two musicians just playing the score.
+scoreVsScore :: [PureHagl.Player Improvise]
+scoreVsScore = [PureHagl.Player "Miss Score" justTheScore, mrScore]
 
-testPeriodic :: Hagl.Player Improvise
-testPeriodic = "Miss Periodic" ::: 
-    periodic [Begin (C, 4), Begin (D, 4), Begin (E, 4), Begin (F, 4)]
+-- | One musician plays minimax, the other just play the score.
+miniVsScore :: [PureHagl.Player Improvise]
+miniVsScore = [PureHagl.Player "Miss Mini" minimax, mrScore]
 
-testMinimax :: Hagl.Player Improvise
-testMinimax  = "Mr. Minimax" ::: minimax
 
-testPlayScore :: Hagl.Player Improvise
-testPlayScore = "Mr. Score" :::
-    do let ss = map future $ scores start
-       n  <- my numMoves
-       id <- myPlayerID
-       return ((ss !! (id-1)) !! n)
--}
+-- | A player playing this strategy will stick to the score, i.e. never
+-- improvise.
+justTheScore :: PureHagl.Strategy Improvise
+justTheScore gs = let ss = map future $ scores start
+                      n  = my numMoves gs
+                      id = myPlayerID gs
+                  in (ss !! (id-1)) !! n
+
+-- | A player who never deviates from the score.
+mrScore :: PureHagl.Player Improvise
+mrScore = PureHagl.Player "Mr. Score" justTheScore
+
+
+-- 
+-- * Printing
+--
 
 {-
 -- Printing
