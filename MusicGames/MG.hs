@@ -31,9 +31,10 @@ player1Prefs = [(1, -1), (2, -1), (3, 1)]
 player2Prefs = [(4, 1), (5, 1), (6, -1)]
 
 --
--- Data definitions
+-- * Game representation
 --
 
+-- | A trivial data type for Improvise.
 data Improvise = Improvise
 
 data RMove = Begin Pitch
@@ -51,9 +52,11 @@ data RealizationState = RS { scores       :: [SingularScore],
                              deriving Show
 
 
+-- | The initial state.
 start :: RealizationState
 start = RS [player2, player1] []
 
+-- | The player whose turn it is.
 who :: RealizationState -> PlayerID
 who rs = length (accumulating rs) + 1
 
@@ -92,8 +95,15 @@ generateMoves p =
     in Begin p: genMoves p halfStepUp range ++ genMoves p halfStepDown range
 
 
+-- | True if the game is over.
 end :: RealizationState -> Bool
 end (RS scores accumulating) = null accumulating && null (future (head scores))
+
+--
+-- * Payoff generation
+--
+
+-- TODO: add more payoff schemes and move to different module? 
 
 type Interval = Int
 type IntPreference = (Interval, Float)
@@ -123,13 +133,14 @@ pay prefs rs = ByPlayer $ p [] (scores rs) prefs
     where p _      []         _     = []
           p before (me:after) (myPrefs:ps) = 
               onePlayerPay (realization me) (map realization (before ++ after)) myPrefs: 
-              p (me:before) after ps
+                p (me:before) after ps
 
 instance Game Improvise where
     type TreeType Improvise = Discrete
     type Move Improvise = RMove
     type State Improvise = RealizationState
-    gameTree _ = stateTreeD who end markable registerMove (pay [player1Prefs, player2Prefs]) start 
+    gameTree _ = stateTreeD who end playable registerMove 
+                 (pay [player1Prefs, player2Prefs]) start 
 
 
 music = execGame Improvise players game step
@@ -137,7 +148,9 @@ music = execGame Improvise players game step
 --main = playMusic music
 
 
--- Players
+--
+-- * Players
+--
 
 players :: [PureHagl.Player Improvise]
 players = [PureHagl.Player "me" minimax, PureHagl.Player "you" minimax]
