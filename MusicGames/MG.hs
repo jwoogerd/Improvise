@@ -24,7 +24,8 @@ player1 = SS [] [Begin (A,4), Extend (A, 4), Begin (G,4), Extend (G, 4),
 player2 :: SingularScore
 player2 = SS [] (replicate 16 (Begin (C, 4)))
 
---samplePrefs = [(1, -1), (2, -1), (3, 0), (4 , 5), (5, 0), (6, -1), (7, 5), (8, -1), (9, -1), (10, -1), (11, -1), (12, 3)]
+--samplePrefs = [(1, -1), (2, -1), (3, 0), (4 , 5), (5, 0), (6, -1), 
+--               (7, 5), (8, -1), (9, -1), (10, -1), (11, -1), (12, 3)]
 
 player1Prefs = [(1, -1), (2, -1), (3, 1)]
 player2Prefs = [(4, 1), (5, 1), (6, -1)]
@@ -63,9 +64,11 @@ registerMove :: RealizationState -> RMove -> RealizationState
 registerMove rs mv = if length (accumulating newRS) == length (scores newRS)
                      then progress newRS
                      else newRS
-    where newRS = RS (scores rs) (mv: accumulating rs)
-          progress rs = let step p mv  = SS (mv: realization p) (tail $ future p)
-                            newPlayers = zipWith step (scores rs) (reverse $ accumulating rs)
+    where newRS       = RS (scores rs) (mv: accumulating rs)
+          progress rs = let step p mv  = SS (mv: realization p) 
+                                            (tail $ future p)
+                            newPlayers = zipWith step (scores rs) 
+                                         (reverse $ accumulating rs)
                         in RS newPlayers []
 
 possMoves :: SingularScore -> [RMove]
@@ -81,8 +84,6 @@ rangedMoves (Begin p:prev) = generateMoves p
 rangedMoves (_      :prev) = rangedMoves prev
 rangedMoves _              = []                            
 
-
--- returns a list of RMoves range number of halfsteps above & below p
 generateMoves :: Pitch -> [RMove]
 generateMoves p =
     let genMoves _ _ 0 = []
@@ -111,7 +112,8 @@ rmoveInterval _           _           = Nothing
 onePlayerPay :: [RMove] -> [[RMove]] -> [IntPreference] -> Float
 onePlayerPay [] _ _ = 0
 onePlayerPay _ [] _ = 0
-onePlayerPay (me:rs) others ps = foldr f 0 others + onePlayerPay rs (map tail others) ps
+onePlayerPay (me:rs) others ps = 
+    foldr f 0 others + onePlayerPay rs (map tail others) ps
     where f (m:ms) acc = case rmoveInterval me m of
                             Nothing -> acc
                             Just a  -> acc + intPref ps a
@@ -185,34 +187,34 @@ getRS mss = RS (map
           getMoves player = SS (reverse (everyTurn player)) []
 
 rsToMusic :: RealizationState -> Music Pitch
-rsToMusic (RS players _) = foldr (:=:) (Prim (Euterpea.Rest 0)) (map ssToMusic players) 
+rsToMusic (RS players _) = foldr ((:=:) . ssToMusic) (Prim (Euterpea.Rest 0)) players 
 
 
 ssToMusic :: SingularScore -> Music Pitch
 ssToMusic (SS realization future) = 
-    let condenseMove ((Main.Rest, x):l)   Main.Rest       = (Main.Rest, x + 1):l
-        condenseMove ((Begin p1, x):l)   (Extend p2)      = 
+    let condenseMove ((Main.Rest, x):l) Main.Rest   = (Main.Rest, x + 1):l
+        condenseMove ((Begin p1, x):l)  (Extend p2) = 
             if p1 == p2
             then (Begin p1, x+1):l
             else error "Extend must extend same pitch as most recent pitch"
-        condenseMove l mv                                 = (mv,1):l
-        condensed                                         = foldl condenseMove [] realization
-        condensedToMusic (Main.Rest, d)                   = Prim (Euterpea.Rest (d*baseDur))
-        condensedToMusic (Begin p, d)                     = Prim (Note (d*baseDur) p) 
-        musicMoves                                        = map condensedToMusic condensed
+        condenseMove l mv                    = (mv,1):l
+        condensed                            = foldl condenseMove [] realization
+        condensedToMusic (Main.Rest, d)      = Prim (Euterpea.Rest (d*baseDur))
+        condensedToMusic (Begin p, d)        = Prim (Note (d*baseDur) p) 
+        musicMoves                           = map condensedToMusic condensed
     in  foldr (:+:) (Prim (Euterpea.Rest 0)) (reverse musicMoves)
 
 -- convert from Euterpea Music to our representation
 okDur :: Dur -> Bool
-okDur d = elem (denominator d) [1,2,4,8]
+okDur d = denominator d `elem` [1,2,4,8]
 
 genRMoves :: RMove -> Dur -> [RMove]
-genRMoves r d = if okDur d then take (floor (d * (1/baseDur))) (repeat r) else error "invalid Duration"
+genRMoves r d = if okDur d then replicate (floor (d * (1/baseDur))) r else error "invalid Duration"
 
 musicToRMoves :: Music Pitch -> [RMove]
-musicToRMoves (Prim (Note d p))          = Begin p : (genRMoves (Extend p) (d - baseDur))
+musicToRMoves (Prim (Note d p))          = Begin p: genRMoves (Extend p) (d - baseDur)
 musicToRMoves (Prim (Euterpea.Rest d  )) = genRMoves  Main.Rest d
-musicToRMoves (m1 :+: m2)                = (musicToRMoves m1) ++ (musicToRMoves m2)
+musicToRMoves (m1 :+: m2)                = musicToRMoves m1 ++ musicToRMoves m2
 musicToRMoves (m1 :=: m2)                = error "Cannot parse overlay"
 musicToRMoves (Modify c m1)              = trace ("Warning: discarding " ++ show c) musicToRMoves m1
   
@@ -224,9 +226,10 @@ musicToSS m = SS [] (reverse (musicToRMoves m))
 -- | String representation of a move summary.
 showMoveSummary :: (Game g, Show (Move g)) =>
   ByPlayer (Hagl.Player g) -> MoveSummary (Move g) -> String
-showMoveSummary ps mss = (unlines . map row)
-                         (zip (everyPlayer ps) (map everyTurn (everyPlayer mss)))
-  where row (p,ms) = "  " ++ show p ++ " moves: " ++ showSeq (reverse (map show ms))
+showMoveSummary ps mss = 
+    (unlines . map row) (zip (everyPlayer ps) (map everyTurn (everyPlayer mss)))
+  where row (p,ms) = "  " ++ show p ++ " moves: " ++ 
+                     showSeq (reverse (map show ms))
 
 -}
 -- starting to import music
