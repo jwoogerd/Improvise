@@ -2,11 +2,7 @@
 
 module PureHagl.Exec where
 
--- | List
-newtype ByPlayer a = ByPlayer [a] deriving (Eq, Show)
-newtype ByTurn a = ByTurn [a] deriving (Eq, Show)
-newtype ByGame a = ByGame [a] deriving (Eq, Show)
-
+import PureHagl.Lists
 -- | Strategy
 type Strategy g = GameState g -> Move g
 
@@ -36,7 +32,7 @@ data Node = Decision PlayerID | Payoff Payoff deriving Eq
 
 -- | Exec 
 data GameState g = GameState 
-    { game       :: g 
+    { game       :: Game g => g 
     , location   :: Node
     , players    :: [Player g]
     , transcript :: Transcript (Move g)
@@ -66,7 +62,7 @@ step gs =
         gameState  = case location gs of 
             Payoff _   -> initGame (t gs) (players gs) t gameNum
             Decision _ -> gs
-    in gameState --ACTUALLY MOVE FORWARD
+    in gameState --TODO ACTUALLY MOVE FORWARD
 
 runN :: Run g -> Int -> Run g
 runN toRun i = 
@@ -74,7 +70,7 @@ runN toRun i =
         1 -> toRun
         _ -> toRun . (runN toRun (i-1))
 
--- location (finish gs)  :: Payoff Payoff
+-- contract: location (finish gs)  :: Payoff Payoff
 finish :: Run g
 finish gs =
     case location gs of
