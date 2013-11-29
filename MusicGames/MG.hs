@@ -60,8 +60,10 @@ start = RS [player2, player1] []
 who :: RealizationState -> PlayerID
 who rs = length (accumulating rs) + 1
 
-markable :: RealizationState -> [RMove]
-markable rs = possMoves $ scores rs !! length (accumulating rs)
+-- | Get a list of the available moves for a player, which is derived from her 
+-- score and past realization.
+playable :: RealizationState -> [RMove]
+playable rs = possMoves $ scores rs !! length (accumulating rs)
 
 registerMove :: RealizationState -> RMove -> RealizationState
 registerMove rs mv = if length (accumulating newRS) == length (scores newRS)
