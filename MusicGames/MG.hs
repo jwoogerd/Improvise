@@ -145,7 +145,7 @@ instance Game Improvise where
                  (pay [player1Prefs, player2Prefs]) start 
 
 
-music = execGame Improvise players game step
+music = execGame Improvise scoreVsScore game once
 
 --main = playMusic music
 
