@@ -147,7 +147,7 @@ instance Game Improvise where
 
 music = execGame Improvise scoreVsScore game once
 
---main = playMusic music
+main = playMusic music
 
 
 --
@@ -191,10 +191,10 @@ printGame = gameState >>= liftIO . putStrLn . show
 
 -}
 -- Music generation
-{-
+
 playMusic :: (GameState Improvise) => IO ()
-playMusic gs = Euterpea.play $ rsToMusic (getRS (forGame 1 (_summaries . _history gs)))
--}
+playMusic gs = Euterpea.play $ rsToMusic (getRS (forGame 1 (moves gs)))
+
 
 
 -- convert from our representation to Euterpea Music
@@ -209,7 +209,9 @@ getRS mss = RS (map
           getMoves player = SS (reverse (everyTurn player)) []
 
 rsToMusic :: RealizationState -> Music Pitch
-rsToMusic (RS players _) = foldr ((:=:) . ssToMusic) (Prim (Euterpea.Rest 0)) players 
+rsToMusic (RS players _) = foldr ((:=:) . ssToMusic) 
+                                 (Prim (Euterpea.Rest 0)) 
+                                 players 
 
 
 ssToMusic :: SingularScore -> Music Pitch
@@ -220,7 +222,8 @@ ssToMusic (SS realization future) =
             then (Begin p1, x+1):l
             else error "Extend must extend same pitch as most recent pitch"
         condenseMove l mv                    = (mv,1):l
-        condensed                            = foldl condenseMove [] realization
+        condensed                            = foldl condenseMove [] 
+                                                     (realization ++ future)
         condensedToMusic (Main.Rest, d)      = Prim (Euterpea.Rest (d*baseDur))
         condensedToMusic (Begin p, d)        = Prim (Note (d*baseDur) p) 
         musicMoves                           = map condensedToMusic condensed
