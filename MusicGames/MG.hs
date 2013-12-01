@@ -17,7 +17,7 @@ baseDur = 1/8
 range = 2
 
 player1 :: SingularScore
-player1 = SS [] [Begin (A,4), Extend (A, 4), Begin (G,4), Extend (G, 4),
+player1 = SS [] [Begin (A, 4), Extend (A, 4), Begin (G,4), Extend (G, 4),
                  Begin (F, 4), Extend (F, 4), Begin (G, 4), Extend (G, 4),
                  Begin (A, 4), Extend (A, 4), Begin (A, 4), Extend (A, 4),
                  Begin (A, 4), Extend (A, 4), Extend (A, 4), Extend (A, 4)]
@@ -28,7 +28,8 @@ player2 = SS [] (replicate 16 (Begin (C, 4)))
 --               (7, 5), (8, -1), (9, -1), (10, -1), (11, -1), (12, 3)]
 
 player1Prefs = [(1, -1), (2, -1), (3, 1)]
-player2Prefs = [(4, 1), (5, 1), (6, -1)]
+--player2Prefs = [(4, 1), (5, 1), (6, -1)]
+player2Prefs = [(3,5),(4,-1)]
 
 --
 -- * Game representation
@@ -54,7 +55,7 @@ data RealizationState = RS { scores       :: [SingularScore],
 
 -- | The initial state.
 start :: RealizationState
-start = RS [player2, player1] []
+start = RS [player1, player2] []
 
 -- | The player whose turn it is.
 who :: RealizationState -> PlayerID
@@ -132,7 +133,7 @@ onePlayerPay (me:rs) others ps =
 
 pay :: [[IntPreference]] -> RealizationState -> Payoff
 pay prefs rs = ByPlayer $ p [] (scores rs) prefs
-    where p _      []         _     = []
+    where p _      []         _            = []
           p before (me:after) (myPrefs:ps) = 
               onePlayerPay (realization me) (map realization (before ++ after)) myPrefs: 
                 p (me:before) after ps
@@ -145,7 +146,8 @@ instance Game Improvise where
                  (pay [player1Prefs, player2Prefs]) start 
 
 
-music = execGame Improvise scoreVsScore game once
+music = execGame Improvise scoreVDepth game once
+
 
 main = playMusic music
 
@@ -153,6 +155,39 @@ main = playMusic music
 --
 -- * Players
 --
+
+-- | A player who never deviates from the score.
+mrScore :: PureHagl.Player Improvise
+mrScore = PureHagl.Player "Mr. Score" justTheScore
+
+--
+-- * Strategies
+--
+
+-- | A player playing this strategy will stick to the score, i.e. never
+-- improvise.
+justTheScore :: PureHagl.Strategy Improvise
+justTheScore gs = let ss = map future $ scores start
+                      n  = my numMoves gs
+                      id = myPlayerID gs
+                  in (ss !! (id-1)) !! n
+
+-- | Improv game specific strategy of depth limited minimax
+mmlStrat :: PureHagl.Strategy Improvise
+mmlStrat = minimaxLimited 4 (pay [player1Prefs, player2Prefs])
+
+--
+-- * Player Sets
+--
+
+
+-- | Two using depth limited
+depthVDepth :: [PureHagl.Player Improvise]
+depthVDepth = [PureHagl.Player "me" mmlStrat, PureHagl.Player "you" mmlStrat]
+
+-- | First player plays score, second improvises
+scoreVDepth :: [PureHagl.Player Improvise]
+scoreVDepth = [PureHagl.Player "me" justTheScore, PureHagl.Player "you" mmlStrat]
 
 -- | Two musicians playing minimax against each other.
 miniVsMini :: [PureHagl.Player Improvise]
@@ -165,19 +200,6 @@ scoreVsScore = [PureHagl.Player "Miss Score" justTheScore, mrScore]
 -- | One musician plays minimax, the other just play the score.
 miniVsScore :: [PureHagl.Player Improvise]
 miniVsScore = [PureHagl.Player "Miss Mini" minimax, mrScore]
-
-
--- | A player playing this strategy will stick to the score, i.e. never
--- improvise.
-justTheScore :: PureHagl.Strategy Improvise
-justTheScore gs = let ss = map future $ scores start
-                      n  = my numMoves gs
-                      id = myPlayerID gs
-                  in (ss !! (id-1)) !! n
-
--- | A player who never deviates from the score.
-mrScore :: PureHagl.Player Improvise
-mrScore = PureHagl.Player "Mr. Score" justTheScore
 
 
 -- 
