@@ -22,12 +22,40 @@ player1 = SS [] [Begin (A, 4), Extend (A, 4), Begin (G,4), Extend (G, 4),
                  Begin (A, 4), Extend (A, 4), Begin (A, 4), Extend (A, 4),
                  Begin (A, 4), Extend (A, 4), Extend (A, 4), Extend (A, 4)]
 player2 :: SingularScore
-player2 = SS [] (replicate 16 (Begin (C, 4)))
+player2 = SS [] (replicate 96 (Begin (C, 4)))
+
+-- DonnaNobis
+x :: [(PitchClass,Rational,Octave)]
+x = [(G,1/8,0),(D,1/8,0),(B,1/2,0),
+     (A,1/8,0),(D,1/8,0),(C,1/2,1),
+     (B,1/4,0),(A,1/4,0),(G,1/4,0),
+     (G,1/4,0),(Fs,1/2,0),
+     (E,1/4,1),(D,1/8,1),(C,1/8,1),(B,1/8,0),(A,1/8,0),
+     (D,3/8,1),(C,1/8,1),(B,1/4,0),
+     (B,1/8,0),(A,1/8,0),(G,1/4,0),(Fs,1/4,0),(G,3/4,0),
+     (D,3/4,1),
+     (D,3/4,1),
+     (D,1/4,1),(C,1/4,1),(B,1/4,0),
+     (B,1/4,0),(A,1/2,0),
+     (E,1/4,1),(E,1/2,1),
+     (D,1/4,1),(D,1/2,1),
+     (D,1/8,1),(C,1/8,1),(B,1/4,0),(A,1/4,0),
+     (G,3/4,0)]
+
+convert :: (PitchClass, Rational, Octave) -> Music Pitch
+convert (pc, r, o) = Prim (Note r (pc, 4+o))
+
+notes :: Music Pitch
+notes = foldr (:+:) (Prim (Euterpea.Rest 0)) (map convert x)
+
+donnaPlayer :: SingularScore
+donnaPlayer = musicToSS notes 
 
 --samplePrefs = [(1, -1), (2, -1), (3, 0), (4 , 5), (5, 0), (6, -1), 
 --               (7, 5), (8, -1), (9, -1), (10, -1), (11, -1), (12, 3)]
 
-player1Prefs = [(1, -1), (2, -1), (3, 1)]
+--player1Prefs = [(1, -1), (2, -1), (3, 1)]
+player1Prefs = []
 --player2Prefs = [(4, 1), (5, 1), (6, -1)]
 player2Prefs = [(3,5),(4,-1)]
 
@@ -55,7 +83,8 @@ data RealizationState = RS { scores       :: [SingularScore],
 
 -- | The initial state.
 start :: RealizationState
-start = RS [player1, player2] []
+--start = RS [player1, player2] []
+start = RS [donnaPlayer, player2] []
 
 -- | The player whose turn it is.
 who :: RealizationState -> PlayerID
@@ -138,6 +167,7 @@ pay prefs rs = ByPlayer $ p [] (scores rs) prefs
               onePlayerPay (realization me) (map realization (before ++ after)) myPrefs: 
                 p (me:before) after ps
 
+
 instance Game Improvise where
     type TreeType Improvise = Discrete
     type Move Improvise = RMove
@@ -216,6 +246,13 @@ printGame = gameState >>= liftIO . putStrLn . show
 
 playMusic :: (GameState Improvise) => IO ()
 playMusic gs = Euterpea.play $ rsToMusic (getRS (forGame 1 (moves gs)))
+{-
+    playMusic gs = if isNewGame gs 
+               then if gameNumber gs == 1
+                    then Euterpea.play $ rsToMusic (treeState (_location gs))
+                    else Euterpea.play $ rsToMusic (getRS (forGame ((gameNumber gs) - 1) (moves gs)) )
+               else Euterpea.play $ rsToMusic (treeState (_location gs))
+                   -}
 
 
 
@@ -266,7 +303,7 @@ musicToRMoves (m1 :=: m2)                = error "Cannot parse overlay"
 musicToRMoves (Modify c m1)              = trace ("Warning: discarding " ++ show c) musicToRMoves m1
   
 musicToSS :: Music Pitch -> SingularScore
-musicToSS m = SS [] (reverse (musicToRMoves m))
+musicToSS m = SS [] (musicToRMoves m)
 
 
 {-
