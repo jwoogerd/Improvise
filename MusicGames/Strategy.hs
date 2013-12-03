@@ -60,22 +60,23 @@ minimaxABLimited depth pay (Discrete (_,Decision me) edges) =
 minimaxABLimited _ _ _ = 
     error "minimaxAlg: root of game tree is not a decision!"
 
-{-
-bestHalfLimited :: Integer -> (s -> Payoff) -> Discrete s mv -> mv
-bestHalfLimited depth pay (Discrete (_,Decision me) edges) =
-    fst $ maximumBy (compare `on` snd)
-        [(m, bestHalf me t depth) | (m,t) <- edges]
-    where sortFunc :: PlayerID -> Discrete s mv  -> Float
-          sortFunc p (Discrete ( _, Payoff vs) _) = forPlayer p vs
-          sortFunc p (Discrete ( s, _        ) _) = forPlayer p $ pay s
-          bestHalf :: PlayerID -> Discrete s mv -> Integer -> [Float]
-          bestHalf who (Discrete ( _, Payoff   vs) _    ) d = [forPlayer who vs]
-          bestHalf who (Discrete ( s, Decision  p) edges) d = 
+-- | bestN Strategy.  --TODO LET ANDREW WRITE THIS EXPLANATION
+bestNLimited :: DiscreteGame g => Int -> Integer -> (State g -> Payoff) -> Strategy () g
+bestNLimited n depth pay = liftM (bestNLimitedAlg n depth pay) location
+
+
+bestNLimitedAlg :: Int -> Integer -> (s -> Payoff) -> Discrete s mv -> mv
+bestNLimitedAlg n depth pay (Discrete (_,Decision me) edges) = 
+    let sortFunc p (Discrete ( _, Payoff vs) _) = forPlayer p vs
+        sortFunc p (Discrete ( s, _        ) _) = forPlayer p $ pay s
+        bestN who (Discrete ( _, Payoff   vs) _    ) d = forPlayer who vs
+        bestN who (Discrete ( s, Decision  p) edges) d =
             if d == 0
-            then [forPlayer who (pay s)]
-            else let sf2 :: Edge s mv -> Float
-                     sf2 = (sortFunc who) . edgeDest
-                     paths :: [Discrete s mv]
-                     paths = sortBy (compare `on` sf2) edges
-                  in map (\tree -> bestHalf p tree (d - 1)) $ take (div (length edges) 2) paths         
-                 -} 
+            then forPlayer who (pay s)
+            else let paths = sortBy (compare `on` (sortFunc who)) (map edgeDest edges)
+                  in maximumBy compare $ map (\tree -> bestN p tree (d - 1)) (take n paths)
+     in fst $ maximumBy (compare `on` snd)
+            [(m, bestN me t depth) | (m,t) <- edges]
+bestNLimitedAlg _ _ _ _ = 
+    error "bestNLimitedAlg: root of game tree is not a decision!"
+
