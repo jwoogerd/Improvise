@@ -13,20 +13,27 @@ import Control.Monad.Trans (liftIO)
 import Control.Monad (liftM,liftM2,unless)
 import Control.Monad.State
 
+main =
+    evalGame (Imp (intervalPayoff [player1Prefs,player2Prefs]) start 2) 
+             miniVsMini (run >> printSummary)
+        where run = step >>= maybe run 
+                                   (\p -> printGame >> playMusic >> return p)
 
-main = evalGame (Imp (intervalPayoff [player1Prefs,player2Prefs]) start) miniVsMini (run >> printSummary)
-   where run = step >>= maybe run (\p -> printGame >> playMusic >>return p)
 
--- Printing
-printGame :: GameM m Improvise => m ()
-printGame = gameState >>= liftIO . putStrLn . show
-
--- Music generation
+-- | Music generation
 playMusic :: (GameM m Improvise, Show (Move Improvise)) => m ()
 playMusic = do
     (mss, _) <- liftM (forGame 1) summaries
     liftIO $ Euterpea.play $ rsToMusic (getRS mss)
     return ()
+
+-- 
+-- * Printing
+--
+
+-- | Print an Improvise game.
+printGame :: GameM m Improvise => m ()
+printGame = gameState >>= liftIO . putStrLn . show
 
 -- | String representation of a move summary.
 showMoveSummary :: (Game g, Show (Move g)) =>
@@ -49,6 +56,3 @@ fromEitherMidi (Right m) =
 iomus = liftM fromEitherMidi testFile
 
 fromio = iomus >>= Euterpea.play
-
---main = evalGame Improvise guessPlayers (run >> printSummary)
---   where run = step >>= maybe run (\p -> printGame >> playMusic >>return p)
