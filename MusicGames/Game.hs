@@ -12,8 +12,8 @@ who rs = length (accumulating rs) + 1
 end :: RealizationState -> Bool
 end (RS scores accumulating) = null accumulating && null (future (head scores))
 
-markable :: RealizationState -> [RMove]
-markable rs = possMoves $ scores rs !! length (accumulating rs)
+playable :: Range -> RealizationState -> [RMove]
+playable r rs = availableMoves r $ scores rs !! length (accumulating rs)
   
 registerMove :: RealizationState -> RMove -> RealizationState
 registerMove rs mv = if length (accumulating newRS) == length (scores newRS)
@@ -27,7 +27,8 @@ registerMove rs mv = if length (accumulating newRS) == length (scores newRS)
 
 
 data Improvise = Imp { payoff :: RealizationState -> Payoff
-                     , state  :: RealizationState           }
+                     , state  :: RealizationState
+                     , range  :: Range}
     
 -- Game instance
 instance Game Improvise where
@@ -35,6 +36,6 @@ instance Game Improvise where
   type Move  Improvise = RMove
   type State Improvise = RealizationState
   
-  gameTree (Imp payoff state) = stateTreeD who end markable registerMove payoff state
-
+  gameTree (Imp payoff state range) = 
+    stateTreeD who end (playable range) registerMove payoff state
 
