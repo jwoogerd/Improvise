@@ -1,2 +1,2 @@
 all : 
-	ghc --make MG.hs
+	ghc --make Main.hs
