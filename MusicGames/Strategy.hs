@@ -1,15 +1,24 @@
 {-# LANGUAGE FlexibleContexts #-}
+
 module Strategy where
+
 import Game
 import State
-import Translations
 import Hagl
+import Euterpea (absPitch, Pitch)
 import Control.Monad (liftM)
-import Data.Function       (on)
-import Data.List           (maximumBy, sortBy)
+import Data.Function (on)
+import Data.List     (maximumBy, sortBy)
+
+--
+-- * Payoff generation
+--
 
 type Interval = Int
 type IntPreference = (Interval, Float)
+
+interval :: Pitch -> Pitch -> Int
+interval p1 p2 = absPitch p2 - absPitch p1
 
 intPref :: [IntPreference] -> Int -> Float
 intPref prefs i = foldr f 0 prefs
@@ -34,29 +43,32 @@ intervalPayoff :: [[IntPreference]] -> RealizationState -> Payoff
 intervalPayoff prefs rs = ByPlayer $ p [] (scores rs) prefs
     where p _      []         _     = []
           p before (me:after) (myPrefs:ps) = 
-              onePlayerPay (realization me) (map realization (before ++ after)) myPrefs: 
+              onePlayerPay (realization me) 
+              (map realization (before ++ after)) myPrefs: 
               p (me:before) after ps
 
+--
+-- * Strategies
+--
 
-
-
+-- | Strategy for always playing the move given by the score; i.e. never
+-- improvising.
 myScore :: DiscreteGame Improvise => Strategy () Improvise
 myScore = liftM myScoreAlg location
-
-myScoreAlg :: Discrete RealizationState RMove -> RMove
-myScoreAlg (Discrete ((RS scores accum),_) _) = 
-    let SS _ future = scores !! (length accum)
-     in head future
+    where myScoreAlg (Discrete (RS scores accum, _) _) = 
+            let SS _ future = scores !! length accum
+            in head future
 
 
--- | Strategy that takes the first available move and chooses it 
+-- | Strategy that always chooses the first available move
 firstOpt :: Discrete s mv -> mv
 firstOpt (Discrete (_,Decision me) edges) = fst $ head edges
 
 -- | Minimax strategy.  Computes the best move for the current player with 
--- depth limit.  Uses the given depth limit and state-based payoff function to 
--- call when limit reached.
-minimaxLimited :: DiscreteGame g => Integer -> (State g -> Payoff) -> Strategy () g
+-- depth limit.  Uses the given depth limit and state-based payoff function 
+-- to call when limit reached.
+minimaxLimited :: DiscreteGame g => 
+    Integer -> (State g -> Payoff) -> Strategy () g
 minimaxLimited i p = liftM (minimaxABLimited i p) location
                          
 
