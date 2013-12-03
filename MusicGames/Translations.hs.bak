@@ -59,21 +59,3 @@ intToPitch i =
 		p = mod i 12
 		o = quot i 12
 
-shiftBy :: Pitch -> Int -> Pitch
-shiftBy p i =
-	if (x < 0) then error "pitch out of range"
-	else
-		intToPitch x
-		where x = (i + pitchToInt p)
-
-halfStepDown :: Pitch -> Pitch
-halfStepDown p = shiftBy p (-1)
-halfStepUp :: Pitch -> Pitch
-halfStepUp   p = shiftBy p   1
-
-interval :: Pitch -> Pitch -> Int
-interval p1 p2 = (pitchToInt p2) - (pitchToInt p1)
-
---TODO checkout his pitch to int --Jayme?
-
-    
