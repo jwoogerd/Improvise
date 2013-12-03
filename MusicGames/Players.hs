@@ -5,6 +5,17 @@ import Strategy
 import Euterpea hiding (Player)
 import Hagl
 
+{- 
+
+This module contains some sample players and common two-player pairings for an
+Improvise game.
+
+-}
+
+--
+-- * Sample players and preferences 
+--
+
 player1 :: SingularScore
 player1 = SS [] [Begin (A,4), Extend (A, 4), Begin (G,4), Extend (G, 4),
                  Begin (F, 4), Extend (F, 4), Begin (G, 4), Extend (G, 4),
@@ -28,28 +39,36 @@ player2Prefs ::[IntPreference]
 player2Prefs = []--[(5, 1), (3, 1)]
 
 
+-- 
+-- * Two-player pairings
+--
 
--- Players
-guessPlayers :: [Player Improvise]
---guessPlayers = ["A" ::: (periodic [Begin (C, 4), Begin (D, 4), Begin (E, 4), Begin (F, 4)])]
-guessPlayers = [testPlayScore, testPlayScore]
+scoreVsMiniMax :: [Player Improvise]
+scoreVsMiniMax = [justTheScore, depthMiniMax]
 
+miniVsMini :: [Player Improvise]
+miniVsMini = [depthMiniMax, depthMiniMax]
+
+
+--
+-- * Players 
+--
+
+-- | A player who always plays the score and never deviates.
+justTheScore :: Player Improvise
+justTheScore = "Mr. Score" ::: myScore
+
+-- | A player who looks ahead to play the optimal move, but only so far.
+depthMiniMax :: Player Improvise
+depthMiniMax = "Mr. Depth" ::: minimaxLimited 4 
+    (intervalPayoff [player1Prefs, player2Prefs])
+
+-- | A player playing the minimax strategy.
+testMinimax :: Player Improvise
+testMinimax  = "Mr. Minimax" ::: minimax
+
+-- | A player who cycles through a list of set moves.
 testPeriodic :: Player Improvise
 testPeriodic = "Miss Periodic" ::: 
     periodic [Begin (C, 4), Begin (D, 4), Begin (E, 4), Begin (F, 4)]
 
-testMinimax :: Player Improvise
-testMinimax  = "Mr. Minimax" ::: minimax
-
-testPlayScore :: Player Improvise
-testPlayScore = "Mr. Score" ::: myScore
-
-testDepthMiniMax :: Player Improvise
-testDepthMiniMax = "Mr. Depth" ::: minimaxLimited 4 (intervalPayoff [player1Prefs, player2Prefs])
-
-
-scoreVsMiniMax :: [Player Improvise]
-scoreVsMiniMax = [testPlayScore, testDepthMiniMax]
-
-miniVsMini :: [Player Improvise]
-miniVsMini = [testDepthMiniMax , testDepthMiniMax]
