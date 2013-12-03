@@ -23,9 +23,9 @@ samplePrefs  ::[IntPreference]
 samplePrefs = [(1, -1), (2, -1), (3, 0), (4 , 5), (5, 0), (6, -1), (7, 5), (8, -1), (9, -1), (10, -1), (11, -1), (12, 3)]
 
 player1Prefs ::[IntPreference]
-player1Prefs = [(1, -1), (2, -1), (3, 1)]
+player1Prefs = [(8, -2), (3, -2)]
 player2Prefs ::[IntPreference]
-player2Prefs = [(4, 1), (5, 1), (6, -1)]
+player2Prefs = []--[(5, 1), (3, 1)]
 
 
 
@@ -44,4 +44,12 @@ testMinimax  = "Mr. Minimax" ::: minimax
 testPlayScore :: Player Improvise
 testPlayScore = "Mr. Score" ::: myScore
 
+testDepthMiniMax :: Player Improvise
+testDepthMiniMax = "Mr. Depth" ::: minimaxLimited 4 (intervalPayoff [player1Prefs, player2Prefs])
 
+
+scoreVsMiniMax :: [Player Improvise]
+scoreVsMiniMax = [testPlayScore, testDepthMiniMax]
+
+miniVsMini :: [Player Improvise]
+miniVsMini = [testDepthMiniMax , testDepthMiniMax]

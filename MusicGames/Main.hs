@@ -14,7 +14,7 @@ import Control.Monad (liftM,liftM2,unless)
 import Control.Monad.State
 
 
-main = evalGame (Imp (intervalPayoff [player1Prefs,player2Prefs]) start) guessPlayers (run >> printSummary)
+main = evalGame (Imp (intervalPayoff [player1Prefs,player2Prefs]) start) miniVsMini (run >> printSummary)
    where run = step >>= maybe run (\p -> printGame >> playMusic >>return p)
 
 -- Printing
