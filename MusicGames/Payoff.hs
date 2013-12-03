@@ -37,7 +37,7 @@ type IntPreference = (Interval, Float)
 interval :: Pitch -> Pitch -> Int
 interval p1 p2 = absPitch p2 - absPitch p1
 
--- | Sum up the total payoff for a player's 
+-- | Sum the total payoff for a player, given his preferences and an interval.
 intPref :: [IntPreference] -> Int -> Float
 intPref prefs i = foldr f 0 prefs
     where f (interval, pay) acc = if i == interval then pay + acc else acc
