@@ -1,6 +1,7 @@
 module Translations where
 
 import Euterpea
+import State
 
 pitchToInt :: Pitch -> Int
 pitchToInt (Cff, o) = 10 + (o-1)*12 
@@ -72,3 +73,7 @@ halfStepUp   p = shiftBy p   1
 
 interval :: Pitch -> Pitch -> Int
 interval p1 p2 = (pitchToInt p2) - (pitchToInt p1)
+
+--TODO checkout his pitch to int --Jayme?
+
+    

@@ -27,7 +27,7 @@ registerMove rs mv = if length (accumulating newRS) == length (scores newRS)
 
 
 data Improvise = Imp { payoff :: RealizationState -> Payoff
-                     , start  :: RealizationState           }
+                     , state  :: RealizationState           }
     
 -- Game instance
 instance Game Improvise where
@@ -35,6 +35,6 @@ instance Game Improvise where
   type Move  Improvise = RMove
   type State Improvise = RealizationState
   
-  gameTree (Imp payoff start) = stateTreeD who end markable registerMove payoff start
+  gameTree (Imp payoff state) = stateTreeD who end markable registerMove payoff state
 
 
