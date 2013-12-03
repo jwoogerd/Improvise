@@ -2,6 +2,7 @@ module Players where
 import State
 import Game
 import Strategy
+import Payoff
 import Euterpea hiding (Player)
 import Hagl
 

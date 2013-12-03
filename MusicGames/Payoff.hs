@@ -56,10 +56,9 @@ onePlayerPay [] _ _ = 0
 onePlayerPay _ [] _ = 0
 onePlayerPay (me:rs) others ps = 
     foldr f 0 others + onePlayerPay rs (map tail others) ps
-    where f (m:ms) acc = 
-        case rmoveInterval me m of
-            Nothing -> acc
-            Just a  -> acc + intPref ps a
+    where f (m:ms) acc = case rmoveInterval me m of
+                            Nothing -> acc
+                            Just a  -> acc + intPref ps a
 
 -- | Generate a payoff matrix from a list of the players' preferences and their
 -- respective scores, which are given by the game state.
@@ -67,8 +66,8 @@ intervalPayoff :: [[IntPreference]] -> RealizationState -> Payoff
 intervalPayoff prefs rs = ByPlayer $ p [] (scores rs) prefs
     where p _      []         _            = []
           p before (me:after) (myPrefs:ps) = 
-          onePlayerPay (realization me) 
-                       (map realization (before ++ after)) myPrefs: 
+            onePlayerPay (realization me) 
+                         (map realization (before ++ after)) myPrefs: 
                             p (me:before) after ps
 
 

@@ -5,6 +5,7 @@ import Game
 import Strategy
 import Conversions
 import State
+import Payoff
 import Players
 import Euterpea
 import Hagl
