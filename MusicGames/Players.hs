@@ -35,9 +35,9 @@ samplePrefs  ::[IntPreference]
 samplePrefs = [(1, -1), (2, -1), (3, 0), (4 , 5), (5, 0), (6, -1), (7, 5), (8, -1), (9, -1), (10, -1), (11, -1), (12, 3)]
 
 player1Prefs ::[IntPreference]
-player1Prefs = [(8, -2), (3, -2)]
+player1Prefs = [(5, 2), (3, 2)]
 player2Prefs ::[IntPreference]
-player2Prefs = []--[(5, 1), (3, 1)]
+player2Prefs = [(5, 1), (3, 1)]
 
 
 -- 
@@ -50,6 +50,11 @@ scoreVsMiniMax = [justTheScore, depthMiniMax]
 miniVsMini :: [Player Improvise]
 miniVsMini = [depthMiniMax, depthMiniMax]
 
+bestVsBest :: [Player Improvise]
+bestVsBest = [testBest3, testBest3]
+
+scoreVsBest :: [Player Improvise]
+scoreVsBest = [justTheScore, testBest3]
 
 --
 -- * Players 
@@ -73,3 +78,7 @@ testPeriodic :: Player Improvise
 testPeriodic = "Miss Periodic" ::: 
     periodic [Begin (C, 4), Begin (D, 4), Begin (E, 4), Begin (F, 4)]
 
+-- | A player who uses the best n strategy with n = 3
+testBest3 :: Player Improvise
+testBest3 = "Missus Best" :::
+    bestNLimited 3 4 (intervalPayoff [player1Prefs, player2Prefs])
