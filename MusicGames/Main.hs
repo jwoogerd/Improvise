@@ -9,16 +9,28 @@ import Payoff
 import Players
 import Euterpea
 import Hagl
-import Codec.Midi
+import Codec.Midi (Midi)
 import Control.Monad.Trans (liftIO)
 import Control.Monad (liftM,liftM2,unless)
 import Control.Monad.State
+import System.Environment (getArgs)
 
+{-
 main =
     evalGame (Imp (intervalPayoff [player1Prefs,player2Prefs]) start 2) 
              scoreVsBest (run >> printSummary)
         where run = step >>= maybe run 
                                    (\p -> printGame >> playMusic >> return p)
+                                   -}
+main = do args <- getArgs;
+          imported <-  mapM importFile args;
+          Euterpea.play $ foldr (:+:) (Prim (Euterpea.Rest 0)) (map fromEitherMidi imported) 
+
+
+fromEitherMidi :: Either String Midi -> Music Pitch
+fromEitherMidi (Right m) = let (m2, _, _) = fromMidi m
+                            in mMap fst m2
+
 
 
 -- | Music generation
@@ -44,16 +56,3 @@ showMoveSummary ps mss = (unlines . map row)
   where row (p,ms) = "  " ++ show p ++ " moves: " ++ showSeq (reverse (map show ms))
 
 
--- starting to import music
-testFile :: IO (Either String Codec.Midi.Midi)
-testFile = importFile "test.MID"
-
-fromEitherMidi :: Either String Codec.Midi.Midi
-     -> Music Pitch
-fromEitherMidi (Right m) = 
-    let (m2, _, _) = fromMidi m
-    in mMap fst m2
-
-iomus = liftM fromEitherMidi testFile
-
-fromio = iomus >>= Euterpea.play
