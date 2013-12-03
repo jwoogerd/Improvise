@@ -1,7 +1,7 @@
 module Moves where
-import Translations
+
 import State
-import Euterpea (Pitch)
+import Euterpea (Pitch, trans)
 
 {-
 
@@ -20,7 +20,7 @@ type Range = Int
 -- enforce the following invariants for possible moves:
 --  TODO: nail down invariants
 availableMoves :: Range -> SingularScore -> [RMove]
-availableMoves i ss = case ss of 
+availableMoves i ss = case ss of
   (SS _               [])          -> []
   (SS m@(Begin r:rs) (Begin f:fs)) -> Rest: Extend r: 
                                             fromPast i m ++ generateMoves i f
@@ -33,7 +33,7 @@ availableMoves i ss = case ss of
 fromPast :: Range -> [RMove] -> [RMove]
 fromPast r (Begin p:prev) = generateMoves r p
 fromPast r (_      :prev) = fromPast r prev
-fromPast _ _              = []                            
+fromPast _ _              = []
 
 -- | For a given range and pitch, generate a list of moves (Begins) range 
 -- number of half steps above and below that pitch.
@@ -42,5 +42,5 @@ generateMoves range p =
     let genMoves _ _ 0 = []
         genMoves p f n = let m = f p
                          in Begin m: genMoves m f (n-1)
-    in Begin p: genMoves p halfStepUp range ++ genMoves p halfStepDown range
+    in Begin p: genMoves p (trans 1) range ++ genMoves p (trans (-1)) range
 
