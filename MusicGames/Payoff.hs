@@ -105,9 +105,3 @@ intervalPayoff prefs rs = ByPlayer $ p [] (scores rs) prefs
                          (map realization (before ++ after)) myPrefs: 
                             p (me:before) after ps
 
-
---
--- * Counterpoint-based payoff generation
---
-
--- TODO: this. (Andrew?)
