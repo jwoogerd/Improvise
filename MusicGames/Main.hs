@@ -14,7 +14,6 @@ import Control.Monad.Trans (liftIO)
 import Control.Monad (liftM,liftM2,unless)
 import Control.Monad.State
 import System.Environment (getArgs)
-
 {-
 main =
     evalGame (Imp (intervalPayoff [player1Prefs,player2Prefs]) start 2) 
@@ -22,9 +21,18 @@ main =
         where run = step >>= maybe run 
                                    (\p -> printGame >> playMusic >> return p)
                                    -}
+
 main = do args <- getArgs;
           imported <-  mapM importFile args;
-          Euterpea.play $ rsToMusic (RS (map (musicToSS . fromEitherMidi) imported) [])
+          let start = RS (map (musicToSS . fromEitherMidi) imported) []
+              players = take (length args) $ cycle [justTheScore,testBest3]
+              prefs = take (length args) $ cycle [player1Prefs,player2Prefs]
+              range = 2
+           in evalGame (Imp (intervalPayoff prefs) start range)
+                  players (run >> printSummary)
+                where run = step >>= maybe run (\p -> printGame >> playMusic >> return p) 
+          --Euterpea.play $ rsToMusic (RS (map (musicToSS . fromEitherMidi) imported) [])
+              
 
 
 fromEitherMidi :: Either String Midi -> Music Pitch
