@@ -19,7 +19,7 @@ main =
     evalGame (Imp (intervalPayoff [player1Prefs,player2Prefs]) start 2) 
              scoreVsBest (run >> printSummary)
         where run = step >>= maybe run 
-                                   (\p -> printGame >> playMusic >> return p)
+                                   (\p -> printGame >> processMusic >> return p)
                                    -}
 
 main = do args <- getArgs;
@@ -31,10 +31,14 @@ main = do args <- getArgs;
           let start = RS (map (musicToSS . fromEitherMidi) imported) []
            in evalGame (Imp pay start range)
                   players (run >> printSummary)
-                where run = step >>= maybe run (\p -> printGame >> playMusic >> return p) 
+                where run = step >>= maybe run (\p -> printGame >> processMusic >> return p) 
           --Euterpea.play $ rsToMusic (RS (map (musicToSS . fromEitherMidi) imported) [])
               
-
+exportMusic :: Music Pitch -> IO ()
+exportMusic mus = do
+    putStrLn "Where should we export your music? (enter with quotation marks)"
+    fname <- readLn
+    exportFile fname (testMidi mus)
 
 fromEitherMidi :: Either String Midi -> Music Pitch
 fromEitherMidi (Right m) = let (m2, _, _) = fromMidi m
@@ -43,13 +47,15 @@ fromEitherMidi (Right m) = let (m2, _, _) = fromMidi m
 
 
 -- | Music generation
-playMusic :: (GameM m Improvise, Show (Move Improvise)) => m ()
-playMusic = do
+processMusic :: (GameM m Improvise, Show (Move Improvise)) => m ()
+processMusic = do
     b <- isNewGame;
     rs <- if b
           then liftM (getRS . fst . (forGame 1)) summaries
           else liftM treeState location 
-    liftIO $ Euterpea.play $ rsToMusic rs
+    let mus = rsToMusic rs
+    liftIO $ Euterpea.play mus
+    liftIO $ exportMusic mus
     return ()
 
 -- 
