@@ -67,9 +67,18 @@ type Interval = Int
 -- intervals, negative payoffs signify undesirable ones.
 type IntPreference = (Interval, Float)
 
--- | Compute the integer difference between two pitches.
+-- | Compute the integer difference between two pitches, from p1 to p2. Full octaves spanned are ignored. Returns -12 to 12.
 interval :: Pitch -> Pitch -> Int
-interval p1 p2 = absPitch p2 - absPitch p1
+interval p1 p2 =
+  let pitch1 = absPitch p1
+      pitch2 = absPitch p2
+  in if (pitch2 `mod` 12) >= (pitch1 `mod` 12)
+     then (pitch2 `mod` 12) - (pitch1 `mod` 12)
+     else (pitch2 `mod` 24) - (pitch1 `mod` 12)
+
+-- | Compute the integer difference between two pitches, from p1 to p2. Full octaves spanned are included.
+interval8ve :: Pitch -> Pitch -> Int
+interval8ve p1 p2 = absPitch p2 - absPitch p1
 
 -- | Sum the total payoff for a player, given his preferences and an interval.
 intPref :: [IntPreference] -> Int -> Float
