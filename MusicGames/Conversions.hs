@@ -39,9 +39,10 @@ ssToMusic (SS realization future) =
             then (Begin p1, x+1):l
             else error "Extend must extend same pitch as most recent pitch"
         condenseMove l mv                 = (mv,1):l
-        condensed                         = foldl condenseMove [] realization
+        condensed                         = foldl condenseMove [] (reverse realization ++ future)
         condensedToMusic (State.Rest, d)  = Prim (Euterpea.Rest (d*baseDur))
         condensedToMusic (Begin p, d)     = Prim (Note (d*baseDur) p) 
+        condensedToMusic a                = error $ "NOPE" ++ (show a)
         musicMoves                        = map condensedToMusic condensed
     in  foldr (:+:) (Prim (Euterpea.Rest 0)) (reverse musicMoves)
 
@@ -72,11 +73,19 @@ musicToRMoves (Prim (Note d p))        = Begin p:
                                          genRMoves (Extend p) (d-baseDur)
 musicToRMoves (Prim (Euterpea.Rest d)) = genRMoves State.Rest d
 musicToRMoves (m1 :+: m2)              = musicToRMoves m1 ++ musicToRMoves m2
-musicToRMoves (m1 :=: m2)              = error "Cannot parse overlay"
+musicToRMoves (m1 :=: m2)              = let c1 = musicToRMoves m1
+                                             c2 = musicToRMoves m2
+                                             merge :: RMove -> RMove -> RMove
+                                             merge State.Rest x          = x
+                                             merge x          State.Rest = x
+                                             merge _          _          = error "cannot parse overlay"
+                                          in if (length c1) > (length c2)
+                                             then (zipWith merge (take (length c2) c1) c2) ++ drop (length c2) c1
+                                             else (zipWith merge (take (length c1) c2) c1) ++ drop (length c1) c2
 musicToRMoves (Modify c m1)            = 
     trace ("Warning: discarding " ++ show c) musicToRMoves m1
 
 -- | Construct an individual score from Euterpea music.
 musicToSS :: Music Pitch -> SingularScore
-musicToSS m = SS [] (reverse (musicToRMoves m))
+musicToSS m = SS [] (musicToRMoves m)
 
