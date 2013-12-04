@@ -93,7 +93,7 @@ bestNLimited n depth pay = liftM (bestNLimitedAlg n depth pay) location
 
 
 bestNLimitedAlg :: Int -> Integer -> (s -> Payoff) -> Discrete s mv -> mv
-bestNLimitedAlg n depth pay (Discrete (_,Decision me) edges) = 
+bestNLimitedAlg n depth pay (Discrete (_,Decision me) edges) = --is that underscore the realizationstate?
     let sortFunc p (Discrete ( _, Payoff vs) _) = forPlayer p vs
         sortFunc p (Discrete ( s, _        ) _) = forPlayer p $ pay s
         bestN who (Discrete ( _, Payoff   vs) _    ) d = forPlayer who vs
@@ -102,8 +102,14 @@ bestNLimitedAlg n depth pay (Discrete (_,Decision me) edges) =
             then forPlayer who (pay s)
             else let paths = sortBy (compare `on` (sortFunc who)) (map edgeDest edges)
                   in maximumBy compare $ map (\tree -> bestN p tree (d - 1)) (take n paths)
-     in fst $ maximumBy (compare `on` snd)
-            [(m, bestN me t depth) | (m,t) <- edges]
+     in let results = sortBy (compare `on` snd)
+                        [(m, bestN me t depth) | (m,t) <- edges]
+            getBest [onlyOne] =  onlyOne 
+            getBest ((m1, f1):(m2,f2):rest) = if (f1 == f2)
+                                              then (m1,f1) -- THIS SHOULD BE BEST MOVE
+                                              else (m1,f1)
+         in fst $ getBest results 
+            
 bestNLimitedAlg _ _ _ _ = 
     error "bestNLimitedAlg: root of game tree is not a decision!"
 
