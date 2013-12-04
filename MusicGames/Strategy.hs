@@ -5,7 +5,7 @@ module Strategy where
 import Game
 import State
 import Hagl
-import Euterpea (absPitch, Pitch)
+import Euterpea (absPitch, Pitch, trans)
 import Control.Monad (liftM)
 import Data.Function (on)
 import Data.List     (maximumBy, sortBy)
@@ -22,10 +22,19 @@ myScore = liftM myScoreAlg location
             let SS _ future = scores !! length accum
             in head future
 
+-- | Strategy for playing the score shifted by the given number of half steps.
+shiftScore :: DiscreteGame Improvise => Int -> Strategy () Improvise
+shiftScore i = liftM shiftAlg location
+    where shiftAlg (Discrete (RS scores accum, _) _) =
+                let SS _ future = scores !! length accum
+                in shift i $ head future
+          shift i (Begin p)  = Begin (trans i p)
+          shift i (Extend p) = Extend (trans i p)
+          shift _ _          = State.Rest       
 
 -- | Strategy that always chooses the first available move
 firstOpt :: Discrete s mv -> mv
-firstOpt (Discrete (_,Decision me) edges) = fst $ head edges
+firstOpt (Discrete (_, Decision me) edges) = fst $ head edges
 
 -- | Minimax strategy.  Computes the best move for the current player with 
 -- depth limit.  Uses the given depth limit and state-based payoff function 
