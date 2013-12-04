@@ -15,14 +15,13 @@ import Control.Monad (liftM,liftM2,unless)
 import System.Environment (getArgs)
 import IO
 
-{-
 main =
-    evalGame (Imp (intervalPayoff [player1Prefs,player2Prefs]) start 2) 
-             scoreVsBest (run >> printSummary)
+    evalGame (Imp (intervalPayoff [player1Prefs,player2Prefs]) (RS [mary, mary] []) 2) 
+             [testBest3, testBest3] (run >> printSummary)
         where run = step >>= maybe run 
                                    (\p -> printGame >> processMusic >> return p)
-                                   -}
 
+{-
 parse ["-n"] = config
 parse ("-fc":args) = configWithFiles args
 parse  args  = getInteractive args
@@ -32,7 +31,7 @@ main = getArgs >>= parse >>= (\(start, players, range, pay) ->
                   players (run >> printSummary))
                 where run = step >>= maybe run (\p -> printGame >> processMusic >> return p) 
               
-
+-}
 exportMusic :: Music Pitch -> IO ()
 exportMusic mus = do
     putStrLn "Where should we export your music? (enter with quotation marks)"

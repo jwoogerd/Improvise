@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleContexts, TypeFamilies #-}
 
 module Strategy where
 
@@ -10,6 +10,8 @@ import Control.Monad (liftM)
 import Data.Function (on)
 import Data.List     (maximumBy, sortBy)
 import Debug.Trace
+import Payoff
+
 --
 -- * Strategies
 --
@@ -87,13 +89,13 @@ minimaxABLimited depth pay (Discrete (_,Decision me) edges) =
 minimaxABLimited _ _ _ = 
     error "minimaxAlg: root of game tree is not a decision!"
 
--- | bestN Strategy.  --TODO LET ANDREW WRITE THIS EXPLANATION
-bestNLimited :: DiscreteGame g => Int -> Integer -> (State g -> Payoff) -> Strategy () g
+-- | bestN Strategy.  --TODO LET ANDREW WITE THIS EXPLANATION
+bestNLimited :: (DiscreteGame Improvise) => Int -> Integer -> (RealizationState -> Payoff) -> Strategy () Improvise
 bestNLimited n depth pay = liftM (bestNLimitedAlg n depth pay) location
 
 
-bestNLimitedAlg :: Int -> Integer -> (s -> Payoff) -> Discrete s mv -> mv
-bestNLimitedAlg n depth pay (Discrete (_,Decision me) edges) = --is that underscore the realizationstate?
+bestNLimitedAlg :: Game Improvise => Int -> Integer -> (RealizationState -> Payoff) -> Discrete RealizationState RMove -> RMove
+bestNLimitedAlg n depth pay (Discrete (RS scores accum, Decision me) edges) =
     let sortFunc p (Discrete ( _, Payoff vs) _) = forPlayer p vs
         sortFunc p (Discrete ( s, _        ) _) = forPlayer p $ pay s
         bestN who (Discrete ( _, Payoff   vs) _    ) d = forPlayer who vs
@@ -104,12 +106,34 @@ bestNLimitedAlg n depth pay (Discrete (_,Decision me) edges) = --is that undersc
                   in maximumBy compare $ map (\tree -> bestN p tree (d - 1)) (take n paths)
      in let results = sortBy (compare `on` snd)
                         [(m, bestN me t depth) | (m,t) <- edges]
-            getBest [onlyOne] =  onlyOne 
-            getBest ((m1, f1):(m2,f2):rest) = if (f1 == f2)
-                                              then (m1,f1) -- THIS SHOULD BE BEST MOVE
-                                              else (m1,f1)
+            getBest :: [(RMove, Float)] -> (RMove, Float)
+            getBest []                       = error "best empty list"
+            getBest [onlyOne]                = onlyOne
+            getBest ((m1, f1):(m2, f2):rest) =
+              if (f1 == f2)
+                then let SS _ future = scores !! length accum
+                         actual      = head future
+                         diff1       = moveDistance m1 actual
+                         diff2       = moveDistance m2 actual
+                      in if diff1 <= diff2
+                         then getBest ((m1, f2):rest)
+                         else getBest ((m2, f2):rest)
+                else (m1,f1)
          in fst $ getBest results 
             
 bestNLimitedAlg _ _ _ _ = 
     error "bestNLimitedAlg: root of game tree is not a decision!"
+
+-- | Calculates the distance between the pitches of two Rmoves in half-steps.
+-- Rests are considered 0 apart from each other, and infinitely far from any pitch.
+moveDistance :: RMove -> RMove -> Int
+moveDistance m1 m2 =
+  case (m1, m2)
+    of (Rest     , Rest     ) -> 0
+       (Begin  p1, Begin  p2) -> abs $ interval8ve p1 p2
+       (Begin  p1, Extend p2) -> abs $ interval8ve p1 p2
+       (Extend p1, Begin  p2) -> abs $ interval8ve p1 p2
+       (Extend p1, Extend p2) -> abs $ interval8ve p1 p2
+       (_        , _        ) -> inf
+  where inf = maxBound
 
