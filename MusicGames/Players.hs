@@ -38,7 +38,6 @@ player3 :: SingularScore
 player3 = SS [] [Begin (D,4), Extend (D, 4), Begin (C, 4)]
 
 
-start = RS [player1, player2] []
 
 samplePrefs  ::[IntPreference]
 samplePrefs = [(1, -1), (2, -1), (3, 0), (4 , 5), (5, 0), (6, -1), (7, 5), 

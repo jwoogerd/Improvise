@@ -26,12 +26,13 @@ main =
 parse ["-n"] = config
 parse  args  = getInteractive args
 
+
 main = getArgs >>= parse >>= (\(start, players, range, pay) ->
           evalGame (Imp pay start range)
                   players (run >> printSummary))
                 where run = step >>= maybe run (\p -> printGame >> processMusic >> return p) 
-          --Euterpea.play $ rsToMusic (RS (map (musicToSS . fromEitherMidi) imported) [])
               
+
 exportMusic :: Music Pitch -> IO ()
 exportMusic mus = do
     putStrLn "Where should we export your music? (enter with quotation marks)"

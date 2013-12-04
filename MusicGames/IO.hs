@@ -24,7 +24,7 @@ fromEitherMidi (Right m) = let (m2, _, _) = fromMidi m
                             in mMap fst m2
 
 config :: IO (RealizationState, [Player Improvise], Int, RealizationState -> Payoff)
-config = let start   = RS [] []
+config = let start   = RS [mary, justCNotes] []
              players = [testBest3,testBest3]
              range   = 3
              pay     = intervalPayoff [player1Prefs,player2Prefs]
