@@ -99,6 +99,7 @@ onePlayerPay (me:rs) others ps =
 intervalPayoff :: [[IntPreference]] -> RealizationState -> Payoff
 intervalPayoff prefs rs = ByPlayer $ p [] (scores rs) prefs
     where p _      []         _            = []
+          p _      _          []           = []
           p before (me:after) (myPrefs:ps) = 
             onePlayerPay (realization me) 
                          (map realization (before ++ after)) myPrefs: 

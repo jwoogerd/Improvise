@@ -24,20 +24,19 @@ pickPlayer file = do putStrLn ("Enter a name for the player of " ++ show file)
 -- * Sample players and preferences 
 --
 
+-- | The opening notes to "Mary Had A Little Lamb".
 mary :: SingularScore
 mary = SS [] [Begin (A,4), Extend (A, 4), Begin (G,4), Extend (G, 4),
                  Begin (F, 4), Extend (F, 4), Begin (G, 4), Extend (G, 4),
                  Begin (A, 4), Extend (A, 4), Begin (A, 4), Extend (A, 4),
                  Begin (A, 4), Extend (A, 4), Extend (A, 4), Extend (A, 4)]
 
--- | 
+-- | A complement to "Mary Had A Little Lamb"; play just C notes.
 justCNotes :: SingularScore
 justCNotes = SS [] (replicate 16 (Begin (C, 4)))
 
-player3 :: SingularScore
-player3 = SS [] [Begin (D,4), Extend (D, 4), Begin (C, 4)]
-
-
+-- ** Some sample preferences
+--
 
 samplePrefs  ::[IntPreference]
 samplePrefs = [(1, -1), (2, -1), (3, 0), (4 , 5), (5, 0), (6, -1), (7, 5), 
@@ -45,6 +44,7 @@ samplePrefs = [(1, -1), (2, -1), (3, 0), (4 , 5), (5, 0), (6, -1), (7, 5),
 
 player1Prefs ::[IntPreference]
 player1Prefs = [(-3, 2), (-5, 2), (5, 2), (3, 2)]
+
 player2Prefs ::[IntPreference]
 player2Prefs = [(5, 1), (3, 1)]
 
