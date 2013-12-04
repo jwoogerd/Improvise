@@ -31,8 +31,10 @@ registerMove rs mv = if length (accumulating newRS) == length (scores newRS)
                      then progress newRS
                      else newRS
     where newRS = RS (scores rs) (mv: accumulating rs)
-          progress rs = let step p mv  = SS (mv: realization p) (tail $ future p)
-                            newPlayers = zipWith step (scores rs) (reverse $ accumulating rs)
+          progress rs = let step p mv  = SS (mv: realization p) 
+                                            (tail $ future p)
+                            newPlayers = zipWith step (scores rs) 
+                                            (reverse $ accumulating rs)
                         in RS newPlayers []
 
 -- | The Improvise data type wraps information unique to a particular game 

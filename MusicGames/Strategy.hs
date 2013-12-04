@@ -9,7 +9,7 @@ import Euterpea (absPitch, Pitch, trans)
 import Control.Monad (liftM)
 import Data.Function (on)
 import Data.List     (maximumBy, sortBy)
-
+import Debug.Trace
 --
 -- * Strategies
 --
