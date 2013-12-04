@@ -88,3 +88,16 @@ musicToRMoves (Modify c m1)            =
 musicToSS :: Music Pitch -> SingularScore
 musicToSS m = SS [] (musicToRMoves m)
 
+
+-- | Extends singular scores with rests so that lengths match
+extendSSs :: RealizationState -> RealizationState
+extendSSs (RS scores []) = 
+    let len                  = maximum $ map (length . future) scores
+        extend (SS [] future) = let extension = replicate (len - (length future)) State.Rest
+                                in SS [] (future ++ extension)
+        extend (SS  _ future) = error "cannot extend singular scores after start of game"
+     in RS (map extend scores) []
+extendSSs _ = error "cannot extend singular scores after start of game"
+
+
+

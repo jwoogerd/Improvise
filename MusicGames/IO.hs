@@ -9,6 +9,8 @@ import Payoff
 import Conversions
 import State
 
+
+
 getInteractive :: [String] -> IO (RealizationState, [Player Improvise], Int, RealizationState -> Payoff)
 getInteractive args = do
     imported <-  mapM importFile args
@@ -22,6 +24,16 @@ getInteractive args = do
 fromEitherMidi :: Either String Midi -> Music Pitch
 fromEitherMidi (Right m) = let (m2, _, _) = fromMidi m
                             in mMap fst m2
+
+
+configWithFiles :: [String] -> IO (RealizationState, [Player Improvise], Int, RealizationState -> Payoff)
+configWithFiles args = do
+    imported <- mapM importFile args
+    let start = RS (map (musicToSS . fromEitherMidi) imported) []
+        players = [testBest3,testBest3]
+        range   = 14
+        pay     = intervalPayoff [player1Prefs,player2Prefs]
+    return (start, players, range, pay)
 
 config :: IO (RealizationState, [Player Improvise], Int, RealizationState -> Payoff)
 config = let start   = RS [mary, justCNotes] []

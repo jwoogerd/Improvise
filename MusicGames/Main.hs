@@ -24,11 +24,11 @@ main =
                                    -}
 
 parse ["-n"] = config
+parse ("-fc":args) = configWithFiles args
 parse  args  = getInteractive args
 
-
 main = getArgs >>= parse >>= (\(start, players, range, pay) ->
-          evalGame (Imp pay start range)
+          evalGame (Imp pay (extendSSs start) range)
                   players (run >> printSummary))
                 where run = step >>= maybe run (\p -> printGame >> processMusic >> return p) 
               
