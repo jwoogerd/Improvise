@@ -12,8 +12,9 @@ import Hagl
 import Codec.Midi (Midi)
 import Control.Monad.Trans (liftIO)
 import Control.Monad (liftM,liftM2,unless)
-import Control.Monad.State
 import System.Environment (getArgs)
+import IO
+
 {-
 main =
     evalGame (Imp (intervalPayoff [player1Prefs,player2Prefs]) start 2) 
@@ -22,15 +23,12 @@ main =
                                    (\p -> printGame >> processMusic >> return p)
                                    -}
 
-main = do args <- getArgs;
-          imported <-  mapM importFile args
-          players <- mapM pickPlayer args
-          putStrLn "How many half steps up/down should each player be able to improvise?"
-          range <- readLn
-          pay <- pickPayoff args
-          let start = RS (map (musicToSS . fromEitherMidi) imported) []
-           in evalGame (Imp pay start range)
-                  players (run >> printSummary)
+parse ["-n"] = config
+parse  args  = getInteractive args
+
+main = getArgs >>= parse >>= (\(start, players, range, pay) ->
+          evalGame (Imp pay start range)
+                  players (run >> printSummary))
                 where run = step >>= maybe run (\p -> printGame >> processMusic >> return p) 
           --Euterpea.play $ rsToMusic (RS (map (musicToSS . fromEitherMidi) imported) [])
               
@@ -40,9 +38,6 @@ exportMusic mus = do
     fname <- readLn
     exportFile fname (testMidi mus)
 
-fromEitherMidi :: Either String Midi -> Music Pitch
-fromEitherMidi (Right m) = let (m2, _, _) = fromMidi m
-                            in mMap fst m2
 
 
 
