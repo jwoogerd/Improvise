@@ -24,7 +24,7 @@ main =
                                    -}
 main = do args <- getArgs;
           imported <-  mapM importFile args;
-          Euterpea.play $ foldr (:+:) (Prim (Euterpea.Rest 0)) (map fromEitherMidi imported) 
+          Euterpea.play $ rsToMusic (RS (map (musicToSS . fromEitherMidi) imported) [])
 
 
 fromEitherMidi :: Either String Midi -> Music Pitch
@@ -36,8 +36,11 @@ fromEitherMidi (Right m) = let (m2, _, _) = fromMidi m
 -- | Music generation
 playMusic :: (GameM m Improvise, Show (Move Improvise)) => m ()
 playMusic = do
-    (mss, _) <- liftM (forGame 1) summaries
-    liftIO $ Euterpea.play $ rsToMusic (getRS mss)
+    b <- isNewGame;
+    rs <- if b
+          then liftM (getRS . fst . (forGame 1)) summaries
+          else liftM treeState location 
+    liftIO $ Euterpea.play $ rsToMusic rs
     return ()
 
 -- 
