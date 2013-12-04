@@ -31,7 +31,7 @@ configWithFiles args = do
     imported <- mapM importFile args
     let start = RS (map (musicToSS . fromEitherMidi) imported) []
         players = [testBest3,testBest3]
-        range   = 14
+        range   = 3
         pay     = intervalPayoff [player1Prefs,player2Prefs]
     return (start, players, range, pay)
 
