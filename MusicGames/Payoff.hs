@@ -16,7 +16,41 @@ This module contains code for various payoff generation schemes based on some
 notion of each players' musical aesthetic preferences.
 
 -}
+allPayoffs :: [String] -> [(String , IO (RealizationState -> Payoff))]
+allPayoffs files = [
+    ("0. Weight payoff based on interval preferences",
+        do putStrLn ("Interval preferences are registered based on an integer "
+                ++ "interval and a float weight to how much you \"like\" the "
+                ++ "interval.\nNote that if you like all thirds, you should "
+                ++ "enter -3 AND 3, to match intervals both above & below you")
+           prefs <- mapM (pickPref True True) files
+           return $ intervalPayoff prefs)
+    ]
 
+pickPref :: Bool -> Bool -> String -> IO ([IntPreference])
+pickPref fst cont file = 
+    if cont 
+    then (if fst
+          then putStrLn ("Choose preferences for " ++ show file)
+          else return ()) >> do 
+            putStrLn "Enter an integer representation of an interval."
+            i <- readLn
+            putStrLn "Enter a float weight"
+            f <- readLn
+            putStrLn "Do you want to enter another interval preference? (\"y\" for yes -- you must type quotes in your response!)"
+            y <- readLn
+            prefs <- pickPref False (y == "y") file
+            return ((i,f):prefs)
+    else return []
+
+pickPayoff :: [String] -> IO (RealizationState -> Payoff)
+pickPayoff files = do
+     putStrLn "Pick a payoff function from the following list:"
+     mapM (printStrLn . fst) (allPayoffs files)
+     pick <- readLn
+     snd $ (allPayoffs files) !! pick
+
+    
 
 --
 -- * Interval-based payoff generation

@@ -23,12 +23,13 @@ main =
                                    -}
 
 main = do args <- getArgs;
-          imported <-  mapM importFile args;
+          imported <-  mapM importFile args
+          players <- mapM pickPlayer args
+          putStrLn "How many half steps up/down should each player be able to improvise?"
+          range <- readLn
+          pay <- pickPayoff args
           let start = RS (map (musicToSS . fromEitherMidi) imported) []
-              players = take (length args) $ cycle [justTheScore,testBest3]
-              prefs = take (length args) $ cycle [player1Prefs,player2Prefs]
-              range = 2
-           in evalGame (Imp (intervalPayoff prefs) start range)
+           in evalGame (Imp pay start range)
                   players (run >> printSummary)
                 where run = step >>= maybe run (\p -> printGame >> playMusic >> return p) 
           --Euterpea.play $ rsToMusic (RS (map (musicToSS . fromEitherMidi) imported) [])

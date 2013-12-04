@@ -13,6 +13,24 @@ import Data.List     (maximumBy, sortBy)
 --
 -- * Strategies
 --
+allStrategies :: [(String, IO (Strategy () Improvise))]
+allStrategies = [
+    ("0. Play the move given by the score (don't improvise)",
+        return myScore),
+    ("1. Play the score shifted by the given number of half steps",
+        do putStrLn ("Enter number of half steps! (warning -- if this is out "
+                ++ "of your range, it will cause illegal moves!)");
+           hs <- readLn;
+           return $ shiftScore hs;)
+    ]
+
+pickStrategy :: IO (Strategy () Improvise)
+pickStrategy = do 
+    putStrLn "Pick a Strategy from the following list:"
+    mapM (printStrLn . fst) allStrategies
+    pick <- readLn
+    snd $ allStrategies !! pick
+
 
 -- | Strategy for always playing the move given by the score; i.e. never
 -- improvising.
