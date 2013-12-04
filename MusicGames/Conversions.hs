@@ -27,7 +27,7 @@ baseDur = 1/8
 -- completed game.
 getRS :: MoveSummary (Move Improvise) -> RealizationState
 getRS mss = RS (map score (everyPlayer mss)) []
-    where score player = SS (reverse (everyTurn player)) []  
+    where score player = SS (everyTurn player) []  
 
 -- | Convert from an individual's realization of the score in the game to a 
 -- series of playable notes in Euterpea.
@@ -42,7 +42,6 @@ ssToMusic (SS realization future) =
         condensed                         = foldl condenseMove [] (reverse realization ++ future)
         condensedToMusic (State.Rest, d)  = Prim (Euterpea.Rest (d*baseDur))
         condensedToMusic (Begin p, d)     = Prim (Note (d*baseDur) p) 
-        condensedToMusic a                = error $ "NOPE" ++ (show a)
         musicMoves                        = map condensedToMusic condensed
     in  foldr (:+:) (Prim (Euterpea.Rest 0)) (reverse musicMoves)
 
