@@ -44,12 +44,17 @@ player2Prefs = []--[(5, 1), (3, 1)]
 -- * Two-player pairings
 --
 
+-- | Play depth-limited minimax against a player who just plays the score.
 scoreVsMiniMax :: [Player Improvise]
 scoreVsMiniMax = [justTheScore, depthMiniMax]
 
+-- | Play depth-limited minimax against itself.
 miniVsMini :: [Player Improvise]
 miniVsMini = [depthMiniMax, depthMiniMax]
 
+-- | Play two score-shifter against each other.
+shiftVsShift :: [Player Improvise]
+shiftVsShift = [shifter 4, shifter 4]
 
 --
 -- * Players 
@@ -63,6 +68,11 @@ justTheScore = "Mr. Score" ::: myScore
 depthMiniMax :: Player Improvise
 depthMiniMax = "Mr. Depth" ::: minimaxLimited 4 
     (intervalPayoff [player1Prefs, player2Prefs])
+
+-- | A player who plays every note in her score shifted by the given number of 
+-- half steps. 
+shifter :: Int -> Player Improvise
+shifter i = "Dr. Shifty" ::: shiftScore i
 
 -- | A player playing the minimax strategy.
 testMinimax :: Player Improvise
