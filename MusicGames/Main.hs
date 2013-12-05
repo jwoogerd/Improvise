@@ -50,7 +50,7 @@ processMusic = do
           else liftM treeState location 
     let mus = rsToMusic rs
     liftIO $ Euterpea.play mus
-    liftIO $ exportMusic mus
+--    liftIO $ exportMusic mus
     return ()
 
 -- 
