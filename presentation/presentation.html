@@ -17,19 +17,91 @@ class: center, middle
 
 ---
 
-class: center, middle
+class: middle
 
 # Agenda
 
-Body 
-
-1. Introduction
-2. Deep-dive
-3. ...
+1. Game Theory?
+2. Adding Music To The Mix
+3. Music as a Two Player Game
+4. Conclusion
+5. Questions
 
 ---
 
-# Introduction
+# Game Theory
+
+---
+
+# Game Theory
+
+    class GameTree (TreeType g) => Game g where
+
+        type TreeType g :: * -> * -> *
+  
+        type State g
+
+        type Move g
+
+        gameTree :: g -> (TreeType g) (State g) (Move g)
+
+---
+
+# Adding Music To The Mix
+
+---
+
+# Adding Music To The Mix
+
+    r1 = instr1 (player1 score r1 r2)
+    r2 = instr2 (player2 score r1 r2)
+
+---
+
+# Adding Music To The Mix
+
+    data RMove = Begin Pitch
+               | Extend Pitch 
+               | Rest deriving (Show, Eq)
+
+    data SingularScore = SS { realization :: [RMove]
+                            , future      :: [RMove] } deriving Show
+
+    data RealizationState = RS { scores       :: [SingularScore]
+                               , accumulating :: [RMove] } deriving Show
+
+    
+---
+
+# Adding Music To The Mix 
+
+    data Improvise = Imp { payoff :: RealizationState -> Payoff
+                         , state  :: RealizationState
+                         , range  :: Range}
+
+    instance Game Improvise where
+      type TreeType Improvise = Discrete
+      type Move  Improvise = RMove
+      type State Improvise = RealizationState
+      
+      gameTree (Imp payoff state range) = 
+        stateTreeD who end (playable range) registerMove payoff state
+
+---
+
+# Music as a Two Player Game 
+
+---
+
+# Conclusion
+
+---
+
+class: middle, center
+
+# Questions?
+
+
 
     </textarea>
     <script src="http://gnab.github.io/remark/downloads/remark-0.5.9.min.js" type="text/javascript">
