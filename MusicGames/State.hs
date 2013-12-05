@@ -8,8 +8,8 @@ import Euterpea
 --             follow a Rest
 --             Extend must have the same pitch as the most recent Begin
 data MusicMv = Begin Pitch
-           | Extend Pitch 
-           | Rest deriving (Show, Eq)
+             | Extend Pitch 
+             | Rest deriving (Show, Eq)
 
 -- | A singular score represents an individual player. The realization is a 
 -- list of musical events that have already occurred, i.e. the player's

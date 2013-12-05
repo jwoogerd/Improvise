@@ -64,7 +64,7 @@ okDur d = denominator d `elem` [1,2,4,8]
 -- fixed-duration musical events representing the same sound.
 genMusicMvs :: MusicMv -> Dur -> [MusicMv]
 genMusicMvs r d | okDur d   = replicate (floor (d * (1/baseDur))) r 
-              | otherwise = error "invalid Duration"
+                | otherwise = error "invalid Duration"
 
 -- | Contruct a list of Improvise musical events from Euterpea music.
 musicToMusicMvs :: Music Pitch -> [MusicMv]
