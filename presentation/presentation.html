@@ -34,59 +34,39 @@ class: middle
 ---
 
 # Game Theory
+``` ruby
+class GameTree (TreeType g) => Game g where
 
-    class GameTree (TreeType g) => Game g where
+    type TreeType g :: * -> * -> *
 
-        type TreeType g :: * -> * -> *
-  
-        type State g
+    type State g
 
-        type Move g
+    type Move g
 
-        gameTree :: g -> (TreeType g) (State g) (Move g)
-
----
-
-# Adding Music To The Mix
+    gameTree :: g -> (TreeType g) (State g) (Move g)
+```
 
 ---
 
 # Adding Music To The Mix
 
-    r1 = instr1 (player1 score r1 r2)
-    r2 = instr2 (player2 score r1 r2)
-
 ---
 
 # Adding Music To The Mix
+``` ruby
+data RMove = Begin Pitch
+           | Extend Pitch 
+           | Rest deriving (Show, Eq)
 
-    data RMove = Begin Pitch
-               | Extend Pitch 
-               | Rest deriving (Show, Eq)
+data SingularScore = 
+    SS { realization :: [RMove]
+       , future      :: [RMove] }
 
-    data SingularScore = SS { realization :: [RMove]
-                            , future      :: [RMove] } deriving Show
-
-    data RealizationState = RS { scores       :: [SingularScore]
-                               , accumulating :: [RMove] } deriving Show
-
+data RealizationState = 
+    RS { scores       :: [SingularScore]
+       , accumulating :: [RMove] }
+```
     
----
-
-# Adding Music To The Mix 
-
-    data Improvise = Imp { payoff :: RealizationState -> Payoff
-                         , state  :: RealizationState
-                         , range  :: Range}
-
-    instance Game Improvise where
-      type TreeType Improvise = Discrete
-      type Move  Improvise = RMove
-      type State Improvise = RealizationState
-      
-      gameTree (Imp payoff state range) = 
-        stateTreeD who end (playable range) registerMove payoff state
-
 ---
 
 # Music as a Two Player Game 

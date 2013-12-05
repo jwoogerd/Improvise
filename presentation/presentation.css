@@ -37,7 +37,7 @@ code {
 -web-border-radius: 5px;
 background: #e7e8e2;
 border-radius: 5px;
-font-size: 16px;
+font-size: 24px;
 }
 
 .pull-left {
@@ -126,3 +126,4 @@ width: 75%;
 float: right;
 padding-top: 2em;
 }
+
