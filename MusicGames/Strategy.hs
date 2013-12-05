@@ -98,10 +98,10 @@ bestNLimitedAlg :: Game Improvise => Int -> Integer -> (RealizationState -> Payo
 bestNLimitedAlg n depth pay (Discrete (RS scores accum, Decision me) edges) =
     let sortFunc p (Discrete ( _, Payoff vs) _) = forPlayer p vs
         sortFunc p (Discrete ( s, _        ) _) = forPlayer p $ pay s
-        bestN who (Discrete ( _, Payoff   vs) _    ) d = forPlayer who vs
+        bestN who (Discrete ( _, Payoff   vs) _    ) d = forPlayer me vs
         bestN who (Discrete ( s, Decision  p) edges) d =
             if d == 0
-            then forPlayer who (pay s)
+            then forPlayer me (pay s)
             else let paths = sortBy (compare `on` (sortFunc who)) (map edgeDest edges)
                   in maximumBy compare $ map (\tree -> bestN p tree (d - 1)) (take n paths)
      in let results = sortBy (compare `on` (negate . snd))
