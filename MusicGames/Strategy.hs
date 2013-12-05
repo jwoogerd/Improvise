@@ -104,7 +104,7 @@ bestNLimitedAlg n depth pay (Discrete (RS scores accum, Decision me) edges) =
             then forPlayer who (pay s)
             else let paths = sortBy (compare `on` (sortFunc who)) (map edgeDest edges)
                   in maximumBy compare $ map (\tree -> bestN p tree (d - 1)) (take n paths)
-     in let results = reverse $ sortBy (compare `on` snd)
+     in let results = sortBy (compare `on` (negate . snd))
                         [(m, bestN me t depth) | (m,t) <- edges]
             getBest :: [(RMove, Float)] -> (RMove, Float)
             getBest []                       = error "best empty list"
