@@ -30,14 +30,14 @@ configWithFiles :: [String] -> IO (RealizationState, [Player Improvise], Int, Re
 configWithFiles args = do
     imported <- mapM importFile args
     let start = RS (map (musicToSS . fromEitherMidi) imported) []
-        players = [testBest3,testBest3]
+        players = [maximize,maximize]
         range   = 3
         pay     = intervalPayoff [player1Prefs,player2Prefs]
     return (start, players, range, pay)
 
 config :: IO (RealizationState, [Player Improvise], Int, RealizationState -> Payoff)
 config = let start   = RS [mary, justCNotes] []
-             players = [testBest3,testBest3]
+             players = [maximize,maximize]
              range   = 3
              pay     = intervalPayoff [player1Prefs,player2Prefs]
           in return (start, players, range, pay)

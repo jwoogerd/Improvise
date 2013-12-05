@@ -27,7 +27,6 @@ prefs1, prefs2 ::[IntPreference]
 prefs1 = [(-3, 2), (-5, 2), (5, 2), (3, 2)]
 prefs2 = [(5, 1), (3, 1)]
 
-
 -- | Just the score.
 example1 = playImprovise 
                 [prefs1, prefs2]             -- players' interval preferences
@@ -44,7 +43,7 @@ example2 = playImprovise [prefs1, prefs2] intervalPayoff bothPlayingMary 2
 
 -- | This sounds good. 
 example3 = playImprovise [prefs1, prefs2] intervalPayoff bothPlayingMary 2
-                         [justTheScore, testBest3]
+                         [justTheScore, maximize]
 
 
 -- | A journey.
@@ -57,7 +56,7 @@ example4 = do
 -- | This actually sounds cool....
 example5 = do 
     start <- getFiles dontStop
-    playImprovise [prefs1, prefs2] intervalPayoff start 8 [testBest3, testBest3]
+    playImprovise [prefs1, prefs2] intervalPayoff start 8 [maximize, maximize]
 
 -- | Randy playing Don't Stop
 example6 = do
