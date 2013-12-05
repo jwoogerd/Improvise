@@ -44,7 +44,7 @@ example2 = playImprovise [prefs1, prefs2] intervalPayoff bothPlayingMary 2
 
 -- | This sounds good. 
 example3 = playImprovise [prefs1, prefs2] intervalPayoff bothPlayingMary 2
-                         [justTheScore, maximize]
+                         [maximize, maximize]
 
 
 -- | A journey.
@@ -57,7 +57,7 @@ example4 = do
 -- | This actually sounds cool....
 example5 = do 
     start <- getFiles dontStop
-    playImprovise [prefs1, prefs2] intervalPayoff start 8 [maximize, maximize]
+    playImprovise [prefs1, prefs2] intervalPayoff start 2 [maximize, maximize]
 
 -- | Randy playing Don't Stop
 example6 = do
