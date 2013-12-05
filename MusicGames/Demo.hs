@@ -23,7 +23,8 @@ import Hagl
 -- | Two players both with "Mary Had A Little Lamb" as their score.
 bothPlayingMary = RS [mary, mary] []
 
-prefs1, prefs2 ::[IntPreference]
+-- | Some sample player preferences.
+prefs1, prefs2 :: [IntPreference]
 prefs1 = [(-3, 2), (-5, 2), (5, 2), (3, 2)]
 prefs2 = [(5, 1), (3, 1)]
 
