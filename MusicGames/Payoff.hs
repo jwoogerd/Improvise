@@ -86,7 +86,7 @@ intPref prefs i = foldr f 0 prefs
     where f (interval, pay) acc = if i == interval then pay + acc else acc
 
 -- | Find the interval between two moves, if one exists.
-rmoveInterval :: RMove -> RMove -> Maybe Interval
+rmoveInterval :: MusicMv -> MusicMv -> Maybe Interval
 rmoveInterval (Begin p1)  (Begin p2)  = Just $ interval p1 p2
 rmoveInterval (Begin p1)  (Extend p2) = Just $ interval p1 p2
 rmoveInterval (Extend p1) (Begin p2)  = Just $ interval p1 p2
@@ -94,7 +94,7 @@ rmoveInterval (Extend p1) (Extend p2) = Just $ interval p1 p2
 rmoveInterval _           _           = Nothing
 
 -- | Calculate the payoff for a single player, given his preferences.
-onePlayerPay :: [RMove] -> [[RMove]] -> [IntPreference] -> Float
+onePlayerPay :: [MusicMv] -> [[MusicMv]] -> [IntPreference] -> Float
 onePlayerPay [] _ _ = 0
 onePlayerPay _ [] _ = 0
 onePlayerPay (me:rs) others ps = 

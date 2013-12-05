@@ -19,7 +19,7 @@ type Range = Int
 -- | Generate a list of possible moves from a given range and score. We  
 -- enforce the following invariants for possible moves:
 --  TODO: nail down invariants
-availableMoves :: Range -> SingularScore -> [RMove]
+availableMoves :: Range -> SingularScore -> [MusicMv]
 availableMoves i ss = case ss of
   (SS _               [])          -> []
   (SS m@(Begin r:rs) (Begin f:fs)) -> Rest: Extend r: 
@@ -30,14 +30,14 @@ availableMoves i ss = case ss of
   (SS m               _ )          -> Rest:           fromPast i m
 
 -- | Produce a list of moves from the most recent past Begin.
-fromPast :: Range -> [RMove] -> [RMove]
+fromPast :: Range -> [MusicMv] -> [MusicMv]
 fromPast r (Begin p:prev) = generateMoves r p
 fromPast r (_      :prev) = fromPast r prev
 fromPast _ _              = []
 
 -- | For a given range and pitch, generate a list of moves (Begins) range 
 -- number of half steps above and below that pitch.
-generateMoves :: Range -> Pitch -> [RMove]
+generateMoves :: Range -> Pitch -> [MusicMv]
 generateMoves range p =
     let genMoves _ _ 0 = []
         genMoves p f n = let m = f p

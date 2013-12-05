@@ -22,11 +22,11 @@ end :: RealizationState -> Bool
 end (RS scores accumulating) = null accumulating && null (future (head scores))
 
 -- | Get a list of the available moves given the allowed range and score.
-playable :: Range -> RealizationState -> [RMove]
+playable :: Range -> RealizationState -> [MusicMv]
 playable r rs = availableMoves r $ scores rs !! length (accumulating rs)
 
 -- | A player makes a move.
-registerMove :: RealizationState -> RMove -> RealizationState
+registerMove :: RealizationState -> MusicMv -> RealizationState
 registerMove rs mv = if length (accumulating newRS) == length (scores newRS)
                      then progress newRS
                      else newRS
@@ -49,7 +49,7 @@ data Improvise = Imp { payoff :: RealizationState -> Payoff
 -- | Game instance
 instance Game Improvise where
   type TreeType Improvise = Discrete
-  type Move  Improvise = RMove
+  type Move  Improvise = MusicMv
   type State Improvise = RealizationState
   
   gameTree (Imp payoff state range) = 

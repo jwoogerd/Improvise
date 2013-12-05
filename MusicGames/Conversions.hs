@@ -62,31 +62,30 @@ okDur d = denominator d `elem` [1,2,4,8]
 
 -- | Convert between a musical event with a given duration to a series of
 -- fixed-duration musical events representing the same sound.
-genRMoves :: RMove -> Dur -> [RMove]
-genRMoves r d | okDur d   = replicate (floor (d * (1/baseDur))) r 
+genMusicMvs :: MusicMv -> Dur -> [MusicMv]
+genMusicMvs r d | okDur d   = replicate (floor (d * (1/baseDur))) r 
               | otherwise = error "invalid Duration"
 
 -- | Contruct a list of Improvise musical events from Euterpea music.
-musicToRMoves :: Music Pitch -> [RMove]
-musicToRMoves (Prim (Note d p))        = Begin p: 
-                                         genRMoves (Extend p) (d-baseDur)
-musicToRMoves (Prim (Euterpea.Rest d)) = genRMoves State.Rest d
-musicToRMoves (m1 :+: m2)              = musicToRMoves m1 ++ musicToRMoves m2
-musicToRMoves (m1 :=: m2)              = let c1 = musicToRMoves m1
-                                             c2 = musicToRMoves m2
-                                             merge :: RMove -> RMove -> RMove
-                                             merge State.Rest x          = x
-                                             merge x          State.Rest = x
-                                             merge _          _          = error "cannot parse overlay"
-                                          in if (length c1) > (length c2)
-                                             then (zipWith merge (take (length c2) c1) c2) ++ drop (length c2) c1
-                                             else (zipWith merge (take (length c1) c2) c1) ++ drop (length c1) c2
-musicToRMoves (Modify c m1)            = 
-    trace ("Warning: discarding " ++ show c) musicToRMoves m1
+musicToMusicMvs :: Music Pitch -> [MusicMv]
+musicToMusicMvs (Prim (Note d p))        = Begin p : genMusicMvs (Extend p) (d-baseDur)
+musicToMusicMvs (Prim (Euterpea.Rest d)) = genMusicMvs State.Rest d
+musicToMusicMvs (m1 :+: m2)              = musicToMusicMvs m1 ++ musicToMusicMvs m2
+musicToMusicMvs (m1 :=: m2)              = let c1 = musicToMusicMvs m1
+                                               c2 = musicToMusicMvs m2
+                                               merge :: MusicMv -> MusicMv -> MusicMv
+                                               merge State.Rest x          = x
+                                               merge x          State.Rest = x
+                                               merge _          _          = error "cannot parse overlay"
+                                            in if (length c1) > (length c2)
+                                               then (zipWith merge (take (length c2) c1) c2) ++ drop (length c2) c1
+                                               else (zipWith merge (take (length c1) c2) c1) ++ drop (length c1) c2
+musicToMusicMvs (Modify c m1)            = 
+    trace ("Warning: discarding " ++ show c) musicToMusicMvs m1
 
 -- | Construct an individual score from Euterpea music.
 musicToSS :: Music Pitch -> SingularScore
-musicToSS m = SS [] (musicToRMoves m)
+musicToSS m = SS [] (musicToMusicMvs m)
 
 
 -- | Extends singular scores with rests so that lengths match

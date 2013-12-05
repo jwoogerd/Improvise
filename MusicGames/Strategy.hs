@@ -94,7 +94,7 @@ bestNLimited :: (DiscreteGame Improvise) => Int -> Integer -> (RealizationState 
 bestNLimited n depth pay = liftM (bestNLimitedAlg n depth pay) location
 
 
-bestNLimitedAlg :: Game Improvise => Int -> Integer -> (RealizationState -> Payoff) -> Discrete RealizationState RMove -> RMove
+bestNLimitedAlg :: Game Improvise => Int -> Integer -> (RealizationState -> Payoff) -> Discrete RealizationState MusicMv -> MusicMv
 bestNLimitedAlg n depth pay (Discrete (RS scores accum, Decision me) edges) =
     let sortFunc p (Discrete ( _, Payoff vs) _) = forPlayer p vs
         sortFunc p (Discrete ( s, _        ) _) = forPlayer p $ pay s
@@ -106,7 +106,7 @@ bestNLimitedAlg n depth pay (Discrete (RS scores accum, Decision me) edges) =
                   in maximumBy compare $ map (\tree -> bestN p tree (d - 1)) (take n paths)
      in let results = sortBy (compare `on` (negate . snd))
                         [(m, bestN me t depth) | (m,t) <- edges]
-            getBest :: [(RMove, Float)] -> (RMove, Float)
+            getBest :: [(MusicMv, Float)] -> (MusicMv, Float)
             getBest []                       = error "best empty list"
             getBest [onlyOne]                = onlyOne
             getBest ((m1, f1):(m2, f2):rest) =
@@ -126,7 +126,7 @@ bestNLimitedAlg _ _ _ _ =
 
 -- | Calculates the distance between the pitches of two Rmoves in half-steps.
 -- Rests are considered 0 apart from each other, and infinitely far from any pitch.
-moveDistance :: RMove -> RMove -> Int
+moveDistance :: MusicMv -> MusicMv -> Int
 moveDistance m1 m2 =
   case (m1, m2)
     of (Rest     , Rest     ) -> 0
