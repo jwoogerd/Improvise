@@ -63,11 +63,11 @@ miniVsMini = [depthMiniMax, depthMiniMax]
 
 -- | Play best 3 against best 3
 bestVsBest :: [Player Improvise]
-bestVsBest = [testBest3, testBest3]
+bestVsBest = [maximize, maximize]
 
 -- | Play score against best 3
 scoreVsBest :: [Player Improvise]
-scoreVsBest = [justTheScore, testBest3]
+scoreVsBest = [justTheScore, maximize]
 
 -- | Play two score-shifter against each other.
 shiftVsShift :: [Player Improvise]
@@ -92,8 +92,8 @@ shifter :: Int -> Player Improvise
 shifter i = "Dr. Shifty" ::: shiftScore i
 
 -- | A player who uses the best n strategy with n = 3
-testBest3 :: Player Improvise
-testBest3 = "Missus Best" :::
+maximize :: Player Improvise
+maximize  = "Missus Maxine" :::
     bestNLimited 3 4 (intervalPayoff [player1Prefs, player2Prefs])
 
 -- | A player who plays randomly from the possible moves.

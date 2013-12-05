@@ -17,7 +17,7 @@ import IO
 
 main =
     evalGame (Imp (intervalPayoff [player1Prefs,player2Prefs]) (RS [mary, mary] []) 2) 
-             [testBest3, testBest3] (run >> printSummary)
+             [maximize, maximize] (run >> printSummary)
         where run = step >>= maybe run 
                                    (\p -> printGame >> processMusic >> return p)
 
