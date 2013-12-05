@@ -59,14 +59,10 @@ example5 = do
     start <- getFiles dontStop
     playImprovise [prefs1, prefs2] intervalPayoff start 8 [testBest3, testBest3]
 
-
--- | Can we do three players?
+-- | Randy playing Don't Stop
 example6 = do
-    start <- getFiles ("midi/DontStopTopOct.mid":dontStop)
-    evalGame (Imp (intervalPayoff [prefs1, prefs1, prefs2]) start 8) 
-                  [justTheScore, testBest3, testBest3]
-                  (step >> step >> printMovesFromHere)
-
+    start <- getFiles dontStop
+    playImprovise [prefs1, prefs2] intervalPayoff start 2 [randy, randy]
 
 -- 
 -- * Some helpers for the demo
