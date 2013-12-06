@@ -9,7 +9,7 @@ import Euterpea
 --             Extend must have the same pitch as the most recent Begin
 data MusicMv = Begin Pitch
              | Extend Pitch 
-             | Rest deriving (Show, Eq)
+             | Rest deriving Eq
 
 -- | A singular score represents an individual player. The realization is a 
 -- list of musical events that have already occurred, i.e. the player's
@@ -25,3 +25,8 @@ data RealizationState = RS { scores       :: [SingularScore]
                            , accumulating :: [MusicMv] } deriving Show
 
 
+instance Show MusicMv where --use 20 chars
+    show (Begin p)  = take 20 $ "Begin  " ++ show p++ (repeat ' ')
+    show (Extend p) = take 20 $ "Extend " ++ show p ++ (repeat ' ')
+    show State.Rest = take 20 $ "Rest" ++ (repeat ' ')
+                            
