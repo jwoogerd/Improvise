@@ -80,8 +80,8 @@ musicToMusicMvs (m1 :=: m2)              = let c1 = musicToMusicMvs m1
                                             in if (length c1) > (length c2)
                                                then (zipWith merge (take (length c2) c1) c2) ++ drop (length c2) c1
                                                else (zipWith merge (take (length c1) c2) c1) ++ drop (length c1) c2
-musicToMusicMvs (Modify c m1)            = 
-    trace ("Warning: discarding " ++ show c) musicToMusicMvs m1
+musicToMusicMvs (Modify c m1)            =  musicToMusicMvs m1
+    --trace ("Warning: discarding " ++ show c) musicToMusicMvs m1
 
 -- | Construct an individual score from Euterpea music.
 musicToSS :: Music Pitch -> SingularScore
