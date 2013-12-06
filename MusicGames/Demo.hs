@@ -79,9 +79,7 @@ playImprovise :: [[IntPreference]] -> ([[IntPreference]] -> RealizationState
 playImprovise prefs payoff start range players  =
     evalGame (Imp (payoff prefs) start range) players 
              (execute >>
-              liftIO (printStrLn "example ready...") >>
-              liftIO (getChar) >>
-              printSummary >> processMusic) 
+              Demo.printGame >> processMusic) 
 
 execute = step >>= maybe execute return
 
@@ -94,4 +92,23 @@ prefs12 = [(0, 2), (1, -2), (-1, -2), (2, -1), (-2, -2),
                    (9,  0), (-9,  0), (10,-1), (-10,-1),
                    (11,-2), (-11,-2), (12, 2), (-12,-2)]
 
+-- | Print summary of the last game.
+printGame :: (GameM m Improvise, Show (Move Improvise)) => m ()
+printGame = do n <- numCompleted
+               (mss,pay) <- liftM (forGame n) summaries
+               ps <- players
+               printStrLn $ "Summary of Game "++show n++":"
+               printStrLn $ "Players: "
+               printStrLn $ show $ map printPlayer (everyPlayer ps)
+               liftIO (printMoves mss)
+               printMaybePayoff pay
 
+printPlayer p = take 18 $ show p ++ repeat ' '
+
+printMoves :: ByPlayer (ByTurn (Move Improvise))-> IO ()
+printMoves mss = let mvs = map everyTurn (everyPlayer mss)
+                     build n = if (n==0) then [] else (n-1):(build (n-1))
+                     base = build (length (head mvs))
+                     getAllNth n = map (flip (!!) n) mvs
+                 in  mapM_ (putStrLn . show . getAllNth) base                                
+               
