@@ -46,7 +46,7 @@ example2 = playImprovise [prefs1, prefs2] intervalPayoff bothPlayingMary 2
 
 -- | This sounds good. 
 example3 = playImprovise [prefs1, prefs2] intervalPayoff bothPlayingMary 2
-                         [maximize, maximize]
+                         [justTheScore, maximize]
 
 
 -- | A journey.
@@ -79,6 +79,8 @@ playImprovise :: [[IntPreference]] -> ([[IntPreference]] -> RealizationState
 playImprovise prefs payoff start range players  =
     evalGame (Imp (payoff prefs) start range) players 
              (execute >>
+              liftIO (printStrLn "example ready...") >>
+              liftIO (getChar) >>
               Demo.printGame >> processMusic) 
 
 execute = step >>= maybe execute return
