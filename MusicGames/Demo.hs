@@ -58,7 +58,11 @@ example4 = do
 -- | This actually sounds cool....
 example5 = do 
     start <- getFiles dontStop
-    playImprovise [prefs1, prefs2] intervalPayoff start 2 [maximize, maximize]
+    playImprovise [prefs1, prefs2] intervalPayoff start 2 [justTheScore, maximize]
+
+example6 = do 
+    start <- getFiles dontStop
+    playImprovise [prefs1, prefs2] intervalPayoff start 2 [maximize, justTheScore]
 
 -- 
 -- * Some helpers for the demo
@@ -72,7 +76,7 @@ dontStop = ["midi/DontStopMiddle.mid", "midi/DontStopBass.mid"]
 getFiles :: [String] -> IO RealizationState
 getFiles files = do 
     imported <- mapM importFile files 
-    return (RS (map (musicToSS . fromEitherMidi) imported) [])
+    return $ extendSSs (RS (map (musicToSS . fromEitherMidi) imported) [])
 
 playImprovise :: [[IntPreference]] -> ([[IntPreference]] -> RealizationState 
     -> Payoff) -> RealizationState -> Range -> [Hagl.Player Improvise] -> IO ()

@@ -23,7 +23,7 @@ end (RS scores accumulating) = foldr ((&&) . null . future) True scores
 
 -- | Get a list of the available moves given the allowed range and score.
 playable :: Range -> RealizationState -> PlayerID -> [MusicMv]
-playable r rs p = trace (show p) $ availableMoves r ( scores rs !! (p - 1))
+playable r rs p = availableMoves r $ scores rs !! (p - 1)
 
 -- | Players make their moves
 registerMoves :: RealizationState -> [MusicMv] -> RealizationState -- front most move should go in the last score
