@@ -29,42 +29,44 @@ prefs1, prefs2:: [IntPreference]
 prefs1 = [(-3, 2), (-5, 2), (5, 2), (3, 2)]
 prefs2 = [(5, 1), (3, 1)]
 
+-- | Sample payoff generation scheme based on intervals and the player 
+-- preferences above.
+pay :: Performance -> Payoff
+pay = intervalPayoff [prefs1, prefs2]
 
 -- | Just the score.
 example1 = playImprovise 
-                [prefs1, prefs2]             -- players' interval preferences
-                intervalPayoff               -- interval-based payoffs 
+                pay                          -- payoffs for this game
                 (ByPlayer [mary, mary])      -- opening state of the game
                 (limitByRange 2)             -- allowed range of deviation
                 [justTheScore, justTheScore] -- players' strategies
 
 
 -- | Random playing (within range).
-example2 = playImprovise [prefs1, prefs2] intervalPayoff bothPlayingMary 
+example2 = playImprovise pay bothPlayingMary 
                          (limitByRange 2) [randy, randy]
 
 
 -- | This sounds good. 
-example3 = playImprovise [prefs1, prefs2] intervalPayoff bothPlayingMary
+example3 = playImprovise pay bothPlayingMary
                          (limitByRange 2) [justTheScore, maximize]
-
 
 -- | A journey.
 example4 = do 
     start <- getFiles dontStop
-    playImprovise [prefs1, prefs2] intervalPayoff start (limitByRange 2)
+    playImprovise pay start (limitByRange 2) 
                   [justTheScore, justTheScore]
 
 -- | This actually sounds cool....
 example5 = do 
     start <- getFiles dontStop
-    playImprovise [prefs1, prefs2] intervalPayoff start (limitByRange 2)
-                  [justTheScore, maximize]
+    playImprovise pay start (limitByRange 2) [justTheScore, maximize]
 
 example6 = do 
     start <- getFiles dontStop
-    playImprovise [prefs1, prefs2] intervalPayoff start (limitByRange 2) 
-                  [maximize, justTheScore]
+    playImprovise pay start (limitByRange 2) [maximize, justTheScore]
+
+
 
 -- 
 -- * Some helpers for the demo
@@ -81,30 +83,18 @@ getFiles files = do
     return $ extendPerformers 
              (ByPlayer (map (musicToPerformer . fromEitherMidi) imported))
 
-playImprovise :: [[IntPreference]] 
-              -> ([[IntPreference]] 
-              -> Performance -> Payoff) 
+playImprovise :: (Performance -> Payoff) 
               -> Performance 
               -> (PlayerID -> Performance -> [MusicMv])
               -> [Hagl.Player Improvise] 
               -> IO ()
-playImprovise prefs payoff start range players  =
-    evalGame (Imp (payoff prefs) start range) players 
+playImprovise payoff start playable players  =
+    evalGame (Imp payoff start playable) players 
              (execute >>
               liftIO (printStrLn "example ready...") >>
               liftIO getChar >>
               Demo.printGame >> processMusic) 
-
-execute = step >>= maybe execute return
-
-
-prefs3 = [(5, 1), (3, 1), (8, -3), (-8, -3)]
-prefs12 = [(0, 2), (1, -2), (-1, -2), (2, -1), (-2, -2),
-                   (3,  0), (-3,  0), (4,  3), (-4,  3),
-                   (5,  0), (-5,  0), (6, -3), (-6, -3),
-                   (7,  4), (-7,  4), (8, -1), (-8, -1),
-                   (9,  0), (-9,  0), (10,-1), (-10,-1),
-                   (11,-2), (-11,-2), (12, 2), (-12,-2)]
+    where execute = step >>= maybe execute return
 
 -- | Print summary of the last game.
 printGame :: (GameM m Improvise, Show (Move Improvise)) => m ()
