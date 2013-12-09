@@ -12,13 +12,6 @@ Improvise game.
 
 -}
 
-
-pickPlayer :: String -> IO (Player Improvise)
-pickPlayer file = do putStrLn ("Enter a name for the player of " ++ show file)
-                     name <- readLn
-                     strat <- pickStrategy                    
-                     return (name ::: strat)
-
 --
 -- * Sample players and preferences 
 --
