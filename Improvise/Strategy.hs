@@ -3,7 +3,6 @@
 module Strategy where
 
 import Game
-import State
 import Hagl
 import Euterpea (absPitch, Pitch, trans)
 import Control.Monad (liftM)
@@ -50,7 +49,7 @@ shiftScore i = liftM shiftAlg location
                 in shift i $ head future
           shift i (Begin p)  = Begin (trans i p)
           shift i (Extend p) = Extend (trans i p)
-          shift _ _          = State.Rest       
+          shift _ _          = Game.Rest       
 
 -- | Strategy that always chooses the first available move
 firstOpt :: Discrete s mv -> mv

@@ -1,13 +1,14 @@
 module IO where
-import Codec.Midi (Midi)
+
 import Players
 import Game
-import Hagl
-import System.Environment (getArgs)
-import Euterpea hiding (Player, Performance)
 import Payoff
 import Conversions
-import State
+
+import Hagl
+import Euterpea hiding (Player, Performance)
+import Codec.Midi (Midi)
+import System.Environment (getArgs)
 
 
 

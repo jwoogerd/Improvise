@@ -1,5 +1,4 @@
 module Players where
-import State
 import Game
 import Strategy
 import Payoff

@@ -1,21 +1,22 @@
 {-# LANGUAGE FlexibleContexts #-}
+
 module Main where
 
 import Game
 import Strategy
 import Conversions
-import State
 import Payoff
 import Players
 import Moves 
+import IO
 
 import Euterpea hiding (Performance)
 import Hagl
+
 import Codec.Midi (Midi)
 import Control.Monad.Trans (liftIO)
 import Control.Monad (liftM,liftM2,unless)
 import System.Environment (getArgs)
-import IO
 
 -- | An example initial game state.
 playMary = ByPlayer [mary, mary]

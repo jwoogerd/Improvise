@@ -3,7 +3,6 @@
 module Payoff where
 
 import Game
-import State
 import Hagl
 import Euterpea (absPitch, Pitch)
 import Control.Monad (liftM)

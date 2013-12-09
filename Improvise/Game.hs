@@ -4,17 +4,38 @@ module Game where
 
 import Euterpea (Pitch)
 import Hagl
-import State
-import Moves
 
 --
 -- * Game representation 
 --
 
+-- | An Improvise move is a discrete, fixed-duration musical event. A player 
+-- may start playing a new note of any pitch, continue or extend the previous 
+-- note, or rest for the duration. 
+-- Invariants: Extend implies extending a previous Begin; an Extend may not
+--             follow a Rest
+--             Extend must have the same pitch as the most recent Begin
+data MusicMv = Begin Pitch
+             | Extend Pitch 
+             | Rest deriving Eq
+
+
+-- | A Performer represents an individual player. The realization is a 
+-- list of musical events that have already occurred, i.e. the player's
+-- interpretation of the score thus far (most recent event first). The future 
+-- is a list of the upcoming events, i.e. the remaining portion of her score.  
+data Performer = Performer { realization :: [MusicMv]
+                           , future      :: [MusicMv] } deriving Show
+
+
+-- | A Performance represents the state of the game at any moment. 
+type Performance = ByPlayer Performer
+
+
 -- | The Improvise data type wraps information unique to a particular game 
--- execution: a description of the players' musical aesthetic preferences (i.e. 
--- a function to generate payoffs); the game state (the scores); and a function
--- for determining legal moves from the given game state. 
+-- execution: a description of the players' musical aesthetic preferences 
+-- (i.e. a function to generate payoffs); the game state (the scores); and 
+-- a function for determining legal moves from the given game state. 
 data Improvise = Imp { payoff   :: Performance -> Payoff
                      , state    :: Performance
                      , playable :: Performance -> PlayerID -> [MusicMv]}
@@ -67,5 +88,15 @@ simStateTreeD end moves exec pay np = tree 1 []
                                [(m, tree (p+1) (m:ms) s) | m <- moves s p]
             | p == np   = Discrete (s, Decision p) 
                                [(m, tree 1 [] (exec s (m:ms))) | m <- moves s p]
-            | otherwise = error "what happen"
+            | otherwise = error "Internal game tree error."
 
+
+--
+-- * Show instances (TODO: move this?)
+--
+
+instance Show MusicMv where --use 20 chars
+    show (Begin p)  = take 20 $ "Begin  " ++ show p ++ repeat ' '
+    show (Extend p) = take 20 $ "Extend " ++ show p ++ repeat ' '
+    show Game.Rest  = take 20 $ "Rest" ++ repeat ' '
+                            

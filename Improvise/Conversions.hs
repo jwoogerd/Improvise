@@ -1,7 +1,6 @@
 module Conversions where
 
 import Euterpea hiding (Performance) 
-import State 
 import Game
 import Hagl
 import Debug.Trace
@@ -33,14 +32,14 @@ getPerformance mss = ByPlayer (map score (everyPlayer mss))
 -- series of playable notes in Euterpea.
 ssToMusic :: Performer -> Music Pitch
 ssToMusic (Performer realization future) = 
-    let condenseMove ((State.Rest, x):l) State.Rest  = (State.Rest, x + 1):l
+    let condenseMove ((Game.Rest, x):l) Game.Rest  = (Game.Rest, x + 1):l
         condenseMove ((Begin p1, x):l)   (Extend p2) = 
             if p1 == p2
             then (Begin p1, x+1):l
             else error "Extend must extend same pitch as most recent pitch"
         condenseMove l mv                 = (mv,1):l
         condensed                         = foldl condenseMove [] (reverse realization ++ future)
-        condensedToMusic (State.Rest, d)  = Prim (Euterpea.Rest (d*baseDur))
+        condensedToMusic (Game.Rest, d)  = Prim (Euterpea.Rest (d*baseDur))
         condensedToMusic (Begin p, d)     = Prim (Note (d*baseDur) p) 
         musicMoves                        = map condensedToMusic condensed
     in  foldr (:+:) (Prim (Euterpea.Rest 0)) (reverse musicMoves)
@@ -69,13 +68,13 @@ genMusicMvs r d | okDur d   = replicate (floor (d * (1/baseDur))) r
 -- | Contruct a list of Improvise musical events from Euterpea music.
 musicToMusicMvs :: Music Pitch -> [MusicMv]
 musicToMusicMvs (Prim (Note d p))        = Begin p : genMusicMvs (Extend p) (d-baseDur)
-musicToMusicMvs (Prim (Euterpea.Rest d)) = genMusicMvs State.Rest d
+musicToMusicMvs (Prim (Euterpea.Rest d)) = genMusicMvs Game.Rest d
 musicToMusicMvs (m1 :+: m2)              = musicToMusicMvs m1 ++ musicToMusicMvs m2
 musicToMusicMvs (m1 :=: m2)              = let c1 = musicToMusicMvs m1
                                                c2 = musicToMusicMvs m2
                                                merge :: MusicMv -> MusicMv -> MusicMv
-                                               merge State.Rest x          = x
-                                               merge x          State.Rest = x
+                                               merge Game.Rest x          = x
+                                               merge x          Game.Rest = x
                                                merge _          _          = error "cannot parse overlay"
                                             in if (length c1) > (length c2)
                                                then (zipWith merge (take (length c2) c1) c2) ++ drop (length c2) c1
@@ -92,7 +91,7 @@ musicToPerformer m = Performer [] (musicToMusicMvs m)
 extendPerformers :: Performance -> Performance
 extendPerformers (ByPlayer performers) = 
     let len                  = maximum $ map (length . future) performers
-        extend (Performer [] future) = let extension = replicate (len - (length future)) State.Rest
+        extend (Performer [] future) = let extension = replicate (len - (length future)) Game.Rest
                                 in Performer [] (future ++ extension)
         extend (Performer  _ future) = error "cannot extend score after start of game"
      in ByPlayer (map extend performers)

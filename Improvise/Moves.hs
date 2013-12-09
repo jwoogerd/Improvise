@@ -1,6 +1,7 @@
 module Moves where
 
-import State
+import Game
+
 import Hagl (forPlayer, PlayerID)
 import Euterpea (Pitch, trans)
 
