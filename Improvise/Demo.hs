@@ -5,7 +5,6 @@ module Demo where
 import Main
 import Moves
 import Game
-import State
 import Conversions
 import IO
 import Players 
