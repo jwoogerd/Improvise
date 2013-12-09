@@ -29,7 +29,7 @@ registerMoves :: Performance -> [MusicMv] -> Performance -- front most move shou
 registerMoves performance mvs 
     | length mvs == length (everyPlayer performance) = ByPlayer (zipWith register (everyPlayer performance) (reverse mvs))
     | otherwise = error "tried to register different number of moves than existing players"
-        where register ss mv = SS (mv: realization ss) (tail (future ss))
+        where register ss mv = Performer (mv: realization ss) (tail (future ss))
 
 -- | The Improvise data type wraps information unique to a particular game 
 -- execution: a description of the players' musical aesthetic preferences (i.e. 

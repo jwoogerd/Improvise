@@ -16,11 +16,11 @@ data MusicMv = Begin Pitch
 -- list of musical events that have already occurred, i.e. the player's
 -- interpretation of the score thus far (most recent event first). The future 
 -- is a list of the upcoming events, i.e. the remaining portion of her score.  
-data SingularScore = SS { realization :: [MusicMv]
-                        , future      :: [MusicMv] } deriving Show
+data Performer = Performer { realization :: [MusicMv]
+                           , future      :: [MusicMv] } deriving Show
 
 -- | A performance represents the state of the game at any moment. 
-type Performance = ByPlayer SingularScore
+type Performance = ByPlayer Performer
 
 
 instance Show MusicMv where --use 20 chars

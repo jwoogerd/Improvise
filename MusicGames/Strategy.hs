@@ -39,14 +39,14 @@ pickStrategy = do
 myScore :: DiscreteGame Improvise => Strategy () Improvise
 myScore = liftM myScoreAlg location
     where myScoreAlg (Discrete (performance, Decision p) _) = 
-            let SS _ f = forPlayer p performance
+            let Performer _ f = forPlayer p performance
             in head f
 
 -- | Strategy for playing the score shifted by the given number of half steps.
 shiftScore :: DiscreteGame Improvise => Int -> Strategy () Improvise
 shiftScore i = liftM shiftAlg location
     where shiftAlg (Discrete (performance, Decision me) _) =
-                let SS _ future = forPlayer me performance
+                let Performer _ future = forPlayer me performance
                 in shift i $ head future
           shift i (Begin p)  = Begin (trans i p)
           shift i (Extend p) = Extend (trans i p)
@@ -111,7 +111,7 @@ bestNLimitedAlg n depth pay (Discrete (performance, Decision me) edges) =
             getBest [onlyOne]                = onlyOne
             getBest ((m1, f1):(m2, f2):rest) =
               if (f1 == f2)
-                then let SS _ future = forPlayer me performance
+                then let Performer _ future = forPlayer me performance
                          actual      = head future
                          diff1       = moveDistance m1 actual
                          diff2       = moveDistance m2 actual

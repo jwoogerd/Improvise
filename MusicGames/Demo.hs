@@ -76,7 +76,7 @@ dontStop = ["midi/DontStopMiddle.mid", "midi/DontStopBass.mid"]
 getFiles :: [String] -> IO Performance
 getFiles files = do 
     imported <- mapM importFile files 
-    return $ extendSSs (ByPlayer (map (musicToSS . fromEitherMidi) imported))
+    return $ extendPerformers (ByPlayer (map (musicToPerformer . fromEitherMidi) imported))
 
 playImprovise :: [[IntPreference]] -> ([[IntPreference]] -> Performance 
     -> Payoff) -> Performance -> Range -> [Hagl.Player Improvise] -> IO ()

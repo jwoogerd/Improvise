@@ -27,12 +27,12 @@ baseDur = 1/8
 -- completed game.
 getPerformance :: MoveSummary (Move Improvise) -> Performance
 getPerformance mss = ByPlayer (map score (everyPlayer mss))
-    where score player = SS (everyTurn player) []  
+    where score player = Performer (everyTurn player) []  
 
 -- | Convert from an individual's realization of the score in the game to a 
 -- series of playable notes in Euterpea.
-ssToMusic :: SingularScore -> Music Pitch
-ssToMusic (SS realization future) = 
+ssToMusic :: Performer -> Music Pitch
+ssToMusic (Performer realization future) = 
     let condenseMove ((State.Rest, x):l) State.Rest  = (State.Rest, x + 1):l
         condenseMove ((Begin p1, x):l)   (Extend p2) = 
             if p1 == p2
@@ -84,17 +84,17 @@ musicToMusicMvs (Modify c m1)            =  musicToMusicMvs m1
     --trace ("Warning: discarding " ++ show c) musicToMusicMvs m1
 
 -- | Construct an individual score from Euterpea music.
-musicToSS :: Music Pitch -> SingularScore
-musicToSS m = SS [] (musicToMusicMvs m)
+musicToPerformer :: Music Pitch -> Performer
+musicToPerformer m = Performer [] (musicToMusicMvs m)
 
 
 -- | Extends singular scores with rests so that lengths match
-extendSSs :: Performance -> Performance
-extendSSs (ByPlayer performers) = 
+extendPerformers :: Performance -> Performance
+extendPerformers (ByPlayer performers) = 
     let len                  = maximum $ map (length . future) performers
-        extend (SS [] future) = let extension = replicate (len - (length future)) State.Rest
-                                in SS [] (future ++ extension)
-        extend (SS  _ future) = error "cannot extend score after start of game"
+        extend (Performer [] future) = let extension = replicate (len - (length future)) State.Rest
+                                in Performer [] (future ++ extension)
+        extend (Performer  _ future) = error "cannot extend score after start of game"
      in ByPlayer (map extend performers)
 
 

@@ -18,7 +18,7 @@ getInteractive args = do
     putStrLn "How many half steps up/down should each player be able to improvise?"
     range <- readLn
     pay <- pickPayoff args
-    let start = extendSSs $ ByPlayer $ map (musicToSS . fromEitherMidi) imported
+    let start = extendPerformers $ ByPlayer $ map (musicToPerformer . fromEitherMidi) imported
     return (start, players, range, pay)
 
 fromEitherMidi :: Either String Midi -> Music Pitch
@@ -29,7 +29,7 @@ fromEitherMidi (Right m) = let (m2, _, _) = fromMidi m
 configWithFiles :: [String] -> IO (Performance, [Player Improvise], Int, Performance -> Payoff)
 configWithFiles args = do
     imported <- mapM importFile args
-    let start = extendSSs $ ByPlayer $ map (musicToSS . fromEitherMidi) imported
+    let start = extendPerformers $ ByPlayer $ map (musicToPerformer . fromEitherMidi) imported
         players = [maximize,maximize]
         range   = 3
         pay     = intervalPayoff [player1Prefs,player2Prefs]

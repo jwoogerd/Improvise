@@ -19,15 +19,15 @@ type Range = Int
 -- | Generate a list of possible moves from a given range and score. We  
 -- enforce the following invariants for possible moves:
 --  TODO: nail down invariants
-availableMoves :: Range -> SingularScore -> [MusicMv]
+availableMoves :: Range -> Performer -> [MusicMv]
 availableMoves i ss = case ss of
-  (SS _               [])          -> []
-  (SS m@(Begin r:rs) (Begin f:fs)) -> Rest: Extend r: 
+  (Performer _               [])          -> []
+  (Performer m@(Begin r:rs) (Begin f:fs)) -> Rest: Extend r: 
                                             fromPast i m ++ generateMoves i f
-  (SS m              (Begin f:fs)) -> Rest: fromPast i m ++ generateMoves i f
-  (SS m@(Begin r:rs)  _ )          -> Rest: Extend r: fromPast i m
-  (SS m@(Extend r:rs) _ )          -> Rest: Extend r: fromPast i m
-  (SS m               _ )          -> Rest:           fromPast i m
+  (Performer m              (Begin f:fs)) -> Rest: fromPast i m ++ generateMoves i f
+  (Performer m@(Begin r:rs)  _ )          -> Rest: Extend r: fromPast i m
+  (Performer m@(Extend r:rs) _ )          -> Rest: Extend r: fromPast i m
+  (Performer m               _ )          -> Rest:           fromPast i m
 
 -- | Produce a list of moves from the most recent past Begin.
 fromPast :: Range -> [MusicMv] -> [MusicMv]

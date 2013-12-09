@@ -25,15 +25,15 @@ pickPlayer file = do putStrLn ("Enter a name for the player of " ++ show file)
 --
 
 -- | The opening notes to "Mary Had A Little Lamb".
-mary :: SingularScore
-mary = SS [] [Begin (A,4), Extend (A, 4), Begin (G,4), Extend (G, 4),
+mary :: Performer
+mary = Performer [] [Begin (A,4), Extend (A, 4), Begin (G,4), Extend (G, 4),
                  Begin (F, 4), Extend (F, 4), Begin (G, 4), Extend (G, 4),
                  Begin (A, 4), Extend (A, 4), Begin (A, 4), Extend (A, 4),
                  Begin (A, 4), Extend (A, 4), Extend (A, 4), Extend (A, 4)]
 
 -- | A complement to "Mary Had A Little Lamb"; play just C notes.
-justCNotes :: SingularScore
-justCNotes = SS [] (replicate 16 (Begin (C, 4)))
+justCNotes :: Performer
+justCNotes = Performer [] (replicate 16 (Begin (C, 4)))
 
 -- ** Some sample preferences
 --
