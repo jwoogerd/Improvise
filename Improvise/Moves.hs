@@ -24,8 +24,9 @@ availableMoves :: Range -> Performer -> [MusicMv]
 availableMoves i ss = case ss of
   (Performer _               [])          -> []
   (Performer m@(Begin r:rs) (Begin f:fs)) -> Rest: Extend r: 
-                                            fromPast i m ++ generateMoves i f
-  (Performer m              (Begin f:fs)) -> Rest: fromPast i m ++ generateMoves i f
+                                             fromPast i m ++ generateMoves i f
+  (Performer m              (Begin f:fs)) -> Rest: fromPast i m 
+                                             ++ generateMoves i f
   (Performer m@(Begin r:rs)  _ )          -> Rest: Extend r: fromPast i m
   (Performer m@(Extend r:rs) _ )          -> Rest: Extend r: fromPast i m
   (Performer m               _ )          -> Rest:           fromPast i m
