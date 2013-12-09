@@ -7,6 +7,8 @@ import Conversions
 import State
 import Payoff
 import Players
+import Moves 
+
 import Euterpea hiding (Performance)
 import Hagl
 import Codec.Midi (Midi)
@@ -15,11 +17,16 @@ import Control.Monad (liftM,liftM2,unless)
 import System.Environment (getArgs)
 import IO
 
-main =
-    evalGame (Imp (intervalPayoff [player1Prefs,player2Prefs]) (ByPlayer [mary, mary]) 2)
-             [maximize, maximize] (run >> printSummary)
-        where run = step >>= maybe run 
-                                   (\p -> printGame >> processMusic >> return p)
+-- | An example initial game state.
+playMary = ByPlayer [mary, mary]
+
+main = evalGame (Imp (intervalPayoff [player1Prefs, player2Prefs]) 
+                     playMary 
+                     (limitByRange 2))
+                     [maximize, maximize] 
+                (run >> printSummary)
+        where run = 
+                step >>= maybe run (\p -> printGame >> processMusic >> return p)
 
 {-
 parse ["-n"] = config

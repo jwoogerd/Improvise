@@ -33,36 +33,38 @@ prefs2 = [(5, 1), (3, 1)]
 -- | Just the score.
 example1 = playImprovise 
                 [prefs1, prefs2]             -- players' interval preferences
-                intervalPayoff               -- interval-based payoff function 
-                (ByPlayer [mary, mary])         -- opening state of the game
-                2                            -- allowed range of deviation
+                intervalPayoff               -- interval-based payoffs 
+                (ByPlayer [mary, mary])      -- opening state of the game
+                (limitByRange 2)             -- allowed range of deviation
                 [justTheScore, justTheScore] -- players' strategies
 
 
 -- | Random playing (within range).
-example2 = playImprovise [prefs1, prefs2] intervalPayoff bothPlayingMary 2 
-                         [randy, randy]
+example2 = playImprovise [prefs1, prefs2] intervalPayoff bothPlayingMary 
+                         (limitByRange 2) [randy, randy]
 
 
 -- | This sounds good. 
-example3 = playImprovise [prefs1, prefs2] intervalPayoff bothPlayingMary 2
-                         [justTheScore, maximize]
+example3 = playImprovise [prefs1, prefs2] intervalPayoff bothPlayingMary
+                         (limitByRange 2) [justTheScore, maximize]
 
 
 -- | A journey.
 example4 = do 
     start <- getFiles dontStop
-    playImprovise [prefs1, prefs2] intervalPayoff start 2 
+    playImprovise [prefs1, prefs2] intervalPayoff start (limitByRange 2)
                   [justTheScore, justTheScore]
 
 -- | This actually sounds cool....
 example5 = do 
     start <- getFiles dontStop
-    playImprovise [prefs1, prefs2] intervalPayoff start 2 [justTheScore, maximize]
+    playImprovise [prefs1, prefs2] intervalPayoff start (limitByRange 2)
+                  [justTheScore, maximize]
 
 example6 = do 
     start <- getFiles dontStop
-    playImprovise [prefs1, prefs2] intervalPayoff start 2 [maximize, justTheScore]
+    playImprovise [prefs1, prefs2] intervalPayoff start (limitByRange 2) 
+                  [maximize, justTheScore]
 
 -- 
 -- * Some helpers for the demo
@@ -76,15 +78,21 @@ dontStop = ["midi/DontStopMiddle.mid", "midi/DontStopBass.mid"]
 getFiles :: [String] -> IO Performance
 getFiles files = do 
     imported <- mapM importFile files 
-    return $ extendPerformers (ByPlayer (map (musicToPerformer . fromEitherMidi) imported))
+    return $ extendPerformers 
+             (ByPlayer (map (musicToPerformer . fromEitherMidi) imported))
 
-playImprovise :: [[IntPreference]] -> ([[IntPreference]] -> Performance 
-    -> Payoff) -> Performance -> Range -> [Hagl.Player Improvise] -> IO ()
+playImprovise :: [[IntPreference]] 
+              -> ([[IntPreference]] 
+              -> Performance -> Payoff) 
+              -> Performance 
+              -> (PlayerID -> Performance -> [MusicMv])
+              -> [Hagl.Player Improvise] 
+              -> IO ()
 playImprovise prefs payoff start range players  =
     evalGame (Imp (payoff prefs) start range) players 
              (execute >>
               liftIO (printStrLn "example ready...") >>
-              liftIO (getChar) >>
+              liftIO getChar >>
               Demo.printGame >> processMusic) 
 
 execute = step >>= maybe execute return
@@ -117,4 +125,3 @@ printMoves mss = let mvs = map everyTurn (everyPlayer mss)
                      base = build (length (head mvs))
                      getAllNth n = map (flip (!!) n) mvs
                  in  mapM_ (putStrLn . show . getAllNth) base                                
-               

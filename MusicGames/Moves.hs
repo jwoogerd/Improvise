@@ -1,12 +1,13 @@
 module Moves where
 
 import State
+import Hagl (forPlayer, PlayerID)
 import Euterpea (Pitch, trans)
 
 {-
 
-This module contains code for generating sets of possible moves (i.e. improvised
-deviations) from a prescribed musical event given by the score.
+This module contains code for generating sets of possible moves (i.e. 
+improvised deviations) from a prescribed musical event given by the score.
 
 Deviation from a given pitch is limited to within an integer range of pitches 
 above and below it. A larger range increases the freedom for a player to 
@@ -43,4 +44,9 @@ generateMoves range p =
         genMoves p f n = let m = f p
                          in Begin m: genMoves m f (n-1)
     in Begin p: genMoves p (trans 1) range ++ genMoves p (trans (-1)) range
+
+-- | Return a list of a player's available moves given the allowed range and 
+-- score.
+limitByRange :: Range -> PlayerID -> Performance -> [MusicMv]
+limitByRange r p performance = availableMoves r $ forPlayer p performance
 
