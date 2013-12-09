@@ -85,7 +85,7 @@ getFiles files = do
 
 playImprovise :: (Performance -> Payoff) 
               -> Performance 
-              -> (PlayerID -> Performance -> [MusicMv])
+              -> (Performance -> PlayerID -> [MusicMv])
               -> [Hagl.Player Improvise] 
               -> IO ()
 playImprovise payoff start playable players  =

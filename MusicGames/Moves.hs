@@ -47,6 +47,6 @@ generateMoves range p =
 
 -- | Return a list of a player's available moves given the allowed range and 
 -- score.
-limitByRange :: Range -> PlayerID -> Performance -> [MusicMv]
-limitByRange r p performance = availableMoves r $ forPlayer p performance
+limitByRange :: Range -> Performance -> PlayerID -> [MusicMv]
+limitByRange r performance p = availableMoves r $ forPlayer p performance
 

@@ -17,7 +17,7 @@ import Moves
 -- for determining legal moves from the given game state. 
 data Improvise = Imp { payoff   :: Performance -> Payoff
                      , state    :: Performance
-                     , playable :: PlayerID -> Performance -> [MusicMv]}
+                     , playable :: Performance -> PlayerID -> [MusicMv]}
  
 
 -- ** These functions are common to all Improvise game executions.
@@ -54,7 +54,7 @@ instance Game Improvise where
 -- | Build a discrete game tree for a state-based game.
 simStateTreeD ::
         (s -> Bool)             -- ^ Is the game over?
-     -> (PlayerID -> s -> [mv]) -- ^ Available moves.
+     -> (s -> PlayerID -> [mv]) -- ^ Available moves.
      -> (s -> [mv] -> s)        -- ^ Execute the moves and return the new state.
      -> (s -> Payoff)           -- ^ Payoff for this (final) state.
      -> Int                     -- ^ number of players
@@ -64,8 +64,8 @@ simStateTreeD end moves exec pay np = tree 1 []
   where tree p ms s 
             | end s     = Discrete (s, Payoff (pay s)) []
             | p < np    = Discrete (s, Decision p) 
-                               [(m, tree (p+1) (m:ms) s) | m <- moves p s]
+                               [(m, tree (p+1) (m:ms) s) | m <- moves s p]
             | p == np   = Discrete (s, Decision p) 
-                               [(m, tree 1 [] (exec s (m:ms))) | m <- moves p s]
+                               [(m, tree 1 [] (exec s (m:ms))) | m <- moves s p]
             | otherwise = error "what happen"
 
