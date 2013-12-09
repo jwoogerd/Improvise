@@ -38,15 +38,15 @@ pickStrategy = do
 -- improvising.
 myScore :: DiscreteGame Improvise => Strategy () Improvise
 myScore = liftM myScoreAlg location
-    where myScoreAlg (Discrete r@(RS scores accum, Decision p) _) = 
-            let SS _ f = scores !! (p - 1)
+    where myScoreAlg (Discrete (performance, Decision p) _) = 
+            let SS _ f = forPlayer p performance
             in head f
 
 -- | Strategy for playing the score shifted by the given number of half steps.
 shiftScore :: DiscreteGame Improvise => Int -> Strategy () Improvise
 shiftScore i = liftM shiftAlg location
-    where shiftAlg (Discrete (RS scores accum, Decision me) _) =
-                let SS _ future = scores !! (me - 1)
+    where shiftAlg (Discrete (performance, Decision me) _) =
+                let SS _ future = forPlayer me performance
                 in shift i $ head future
           shift i (Begin p)  = Begin (trans i p)
           shift i (Extend p) = Extend (trans i p)
@@ -90,12 +90,12 @@ minimaxABLimited _ _ _ =
     error "minimaxAlg: root of game tree is not a decision!"
 
 -- | bestN Strategy.  --TODO LET ANDREW WITE THIS EXPLANATION
-bestNLimited :: (DiscreteGame Improvise) => Int -> Integer -> (RealizationState -> Payoff) -> Strategy () Improvise
+bestNLimited :: (DiscreteGame Improvise) => Int -> Integer -> (Performance -> Payoff) -> Strategy () Improvise
 bestNLimited n depth pay = liftM (bestNLimitedAlg n depth pay) location
 
 
-bestNLimitedAlg :: Game Improvise => Int -> Integer -> (RealizationState -> Payoff) -> Discrete RealizationState MusicMv -> MusicMv
-bestNLimitedAlg n depth pay (Discrete (RS scores accum, Decision me) edges) =
+bestNLimitedAlg :: Game Improvise => Int -> Integer -> (Performance -> Payoff) -> Discrete Performance MusicMv -> MusicMv
+bestNLimitedAlg n depth pay (Discrete (performance, Decision me) edges) =
     let sortFunc p (Discrete ( _, Payoff vs) _) = forPlayer p vs
         sortFunc p (Discrete ( s, _        ) _) = forPlayer p $ pay s
         bestN who (Discrete ( _, Payoff   vs) _    ) d = forPlayer me vs
@@ -111,7 +111,7 @@ bestNLimitedAlg n depth pay (Discrete (RS scores accum, Decision me) edges) =
             getBest [onlyOne]                = onlyOne
             getBest ((m1, f1):(m2, f2):rest) =
               if (f1 == f2)
-                then let SS _ future = scores !! (me - 1)
+                then let SS _ future = forPlayer me performance
                          actual      = head future
                          diff1       = moveDistance m1 actual
                          diff2       = moveDistance m2 actual

@@ -7,7 +7,7 @@ import Conversions
 import State
 import Payoff
 import Players
-import Euterpea
+import Euterpea hiding (Performance)
 import Hagl
 import Codec.Midi (Midi)
 import Control.Monad.Trans (liftIO)
@@ -16,7 +16,7 @@ import System.Environment (getArgs)
 import IO
 
 main =
-    evalGame (Imp (intervalPayoff [player1Prefs,player2Prefs]) (RS [mary, mary] []) 2) 
+    evalGame (Imp (intervalPayoff [player1Prefs,player2Prefs]) (ByPlayer [mary, mary]) 2)
              [maximize, maximize] (run >> printSummary)
         where run = step >>= maybe run 
                                    (\p -> printGame >> processMusic >> return p)
@@ -45,10 +45,10 @@ exportMusic mus = do
 processMusic :: (GameM m Improvise, Show (Move Improvise)) => m ()
 processMusic = do
     b <- isNewGame;
-    rs <- if b
-          then liftM (getRS . fst . (forGame 1)) summaries
+    performance <- if b
+          then liftM (getPerformance . fst . (forGame 1)) summaries
           else liftM treeState location 
-    let mus = rsToMusic rs
+    let mus = performanceToMusic performance
     liftIO $ Euterpea.play mus
 --    liftIO $ exportMusic mus
     return ()

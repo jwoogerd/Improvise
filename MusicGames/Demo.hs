@@ -14,7 +14,7 @@ import Payoff
 import Control.Monad.Trans (liftIO)
 import Control.Monad (liftM)
 
-import Euterpea
+import Euterpea hiding (Performance)
 import Hagl
 
 --
@@ -22,7 +22,7 @@ import Hagl
 --
 
 -- | Two players both with "Mary Had A Little Lamb" as their score.
-bothPlayingMary = RS [mary, mary] []
+bothPlayingMary = ByPlayer [mary, mary]
 
 -- | Some sample player preferences.
 prefs1, prefs2:: [IntPreference]
@@ -34,7 +34,7 @@ prefs2 = [(5, 1), (3, 1)]
 example1 = playImprovise 
                 [prefs1, prefs2]             -- players' interval preferences
                 intervalPayoff               -- interval-based payoff function 
-                (RS [mary, mary] [])         -- opening state of the game
+                (ByPlayer [mary, mary])         -- opening state of the game
                 2                            -- allowed range of deviation
                 [justTheScore, justTheScore] -- players' strategies
 
@@ -73,13 +73,13 @@ example6 = do
 dontStop :: [String]
 dontStop = ["midi/DontStopMiddle.mid", "midi/DontStopBass.mid"]
 
-getFiles :: [String] -> IO RealizationState
+getFiles :: [String] -> IO Performance
 getFiles files = do 
     imported <- mapM importFile files 
-    return $ extendSSs (RS (map (musicToSS . fromEitherMidi) imported) [])
+    return $ extendSSs (ByPlayer (map (musicToSS . fromEitherMidi) imported))
 
-playImprovise :: [[IntPreference]] -> ([[IntPreference]] -> RealizationState 
-    -> Payoff) -> RealizationState -> Range -> [Hagl.Player Improvise] -> IO ()
+playImprovise :: [[IntPreference]] -> ([[IntPreference]] -> Performance 
+    -> Payoff) -> Performance -> Range -> [Hagl.Player Improvise] -> IO ()
 playImprovise prefs payoff start range players  =
     evalGame (Imp (payoff prefs) start range) players 
              (execute >>

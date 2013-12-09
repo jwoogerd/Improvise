@@ -1,6 +1,6 @@
 module Conversions where
 
-import Euterpea
+import Euterpea hiding (Performance) 
 import State 
 import Game
 import Hagl
@@ -25,8 +25,8 @@ baseDur = 1/8
 
 -- | Reconstruct the realization state from the move summary of a 
 -- completed game.
-getRS :: MoveSummary (Move Improvise) -> RealizationState
-getRS mss = RS (map score (everyPlayer mss)) []
+getPerformance :: MoveSummary (Move Improvise) -> Performance
+getPerformance mss = ByPlayer (map score (everyPlayer mss))
     where score player = SS (everyTurn player) []  
 
 -- | Convert from an individual's realization of the score in the game to a 
@@ -47,9 +47,9 @@ ssToMusic (SS realization future) =
 
 -- | Overlay each players' individual realization to produce one peice of 
 -- playable music. 
-rsToMusic :: RealizationState -> Music Pitch
-rsToMusic (RS players _) = 
-    foldr ((:=:) . ssToMusic) (Prim (Euterpea.Rest 0)) players
+performanceToMusic :: Performance -> Music Pitch
+performanceToMusic (ByPlayer performers) = 
+    foldr ((:=:) . ssToMusic) (Prim (Euterpea.Rest 0)) performers
 
 
 -- 
@@ -89,14 +89,13 @@ musicToSS m = SS [] (musicToMusicMvs m)
 
 
 -- | Extends singular scores with rests so that lengths match
-extendSSs :: RealizationState -> RealizationState
-extendSSs (RS scores []) = 
-    let len                  = maximum $ map (length . future) scores
+extendSSs :: Performance -> Performance
+extendSSs (ByPlayer performers) = 
+    let len                  = maximum $ map (length . future) performers
         extend (SS [] future) = let extension = replicate (len - (length future)) State.Rest
                                 in SS [] (future ++ extension)
-        extend (SS  _ future) = error "cannot extend singular scores after start of game"
-     in RS (map extend scores) []
-extendSSs _ = error "cannot extend singular scores after start of game"
+        extend (SS  _ future) = error "cannot extend score after start of game"
+     in ByPlayer (map extend performers)
 
 
 

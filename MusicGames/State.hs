@@ -1,5 +1,6 @@
 module State where
-import Euterpea
+import Euterpea (Pitch)
+import Hagl     (ByPlayer)
 
 -- | An Improvise move is a fixed-duration musical event. A player may start
 -- playing a new note of any pitch, continue or extend the previous note, or 
@@ -18,11 +19,8 @@ data MusicMv = Begin Pitch
 data SingularScore = SS { realization :: [MusicMv]
                         , future      :: [MusicMv] } deriving Show
 
--- | A realization state represents the state of the game at any moment.  The
--- scores represents all the individual players; accumulating keeps track of
--- moves that have been "decided upon" but not yet registered.
-data RealizationState = RS { scores       :: [SingularScore]
-                           , accumulating :: [MusicMv] } deriving Show
+-- | A performance represents the state of the game at any moment. 
+type Performance = ByPlayer SingularScore
 
 
 instance Show MusicMv where --use 20 chars

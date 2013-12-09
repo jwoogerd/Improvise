@@ -16,7 +16,7 @@ This module contains code for various payoff generation schemes based on some
 notion of each players' musical aesthetic preferences.
 
 -}
-allPayoffs :: [String] -> [(String , IO (RealizationState -> Payoff))]
+allPayoffs :: [String] -> [(String , IO (Performance -> Payoff))]
 allPayoffs files = [
     ("0. Weight payoff based on interval preferences",
         do putStrLn ("Interval preferences are registered based on an integer "
@@ -43,7 +43,7 @@ pickPref fst cont file =
             return ((i,f):prefs)
     else return []
 
-pickPayoff :: [String] -> IO (RealizationState -> Payoff)
+pickPayoff :: [String] -> IO (Performance -> Payoff)
 pickPayoff files = do
      putStrLn "Pick a payoff function from the following list:"
      mapM (printStrLn . fst) (allPayoffs files)
@@ -97,16 +97,16 @@ rmoveInterval _           _           = Nothing
 onePlayerPay :: [MusicMv] -> [[MusicMv]] -> [IntPreference] -> Float
 onePlayerPay [] _ _ = 0
 onePlayerPay _ [] _ = 0
-onePlayerPay (me:rs) others ps = 
-    foldr f 0 others + onePlayerPay rs (map tail others) ps
+onePlayerPay (me:performance) others ps = 
+    foldr f 0 others + onePlayerPay performance (map tail others) ps
     where f (m:ms) acc = case rmoveInterval me m of
                             Nothing -> acc
                             Just a  -> acc + intPref ps a
 
 -- | Generate a payoff matrix from a list of the players' preferences and their
 -- respective scores, which are given by the game state.
-intervalPayoff :: [[IntPreference]] -> RealizationState -> Payoff
-intervalPayoff prefs rs = ByPlayer $ p [] (scores rs) prefs
+intervalPayoff :: [[IntPreference]] -> Performance -> Payoff
+intervalPayoff prefs performance = ByPlayer $ p [] (everyPlayer performance) prefs
     where p _      []         _            = []
           p _      _          []           = []
           p before (me:after) (myPrefs:ps) = 
