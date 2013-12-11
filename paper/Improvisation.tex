@@ -4,7 +4,7 @@
 
 \begin{document}
 
-\title{The Prisoner's Sonata: Modeling Musical Improvisation with Game Theory}
+\title{The Prisoner's Sonata: \\ \small Modeling Musical Improvisation with Game Theory}
 \date{}
 \author{Caroline Marcks, Andrew Mendelsohn, and Jayme Woogerd}
 \maketitle
@@ -60,10 +60,10 @@
 
     \begin{verbatim}
         class GameTree (TreeType g) => Game g where
-    		type TreeType g :: * -> * -> *
-    		type State g
-    		type Move g
-    		gameTree :: g -> (TreeType g) (State g) (Move g)
+            type TreeType g :: * -> * -> *
+            type State g
+            type Move g
+            gameTree :: g -> (TreeType g) (State g) (Move g)
     \end{verbatim}
 
     TreeType, State, and Move are associated types that must be defined in terms of the game.  The only function that must be provided is the gameTree function, that takes a game, and builds it's whole game tree.  Hagl provides a number of operations to then interact with the game, which all involve examination of the built game tree, which is why it is a requirement that the TreeType also is an instance of his GameTree class, which contains operations for examining nodes and the moves that branch off from every node.
@@ -76,7 +76,7 @@
 
     \begin{verbatim}
         data Player g = forall s. Player Name s (Strategy s g)
-              		  | Name ::: Strategy () g
+                      | Name ::: Strategy () g
     \end{verbatim}
 
     Here the Name is just a String, and they must be associated with a strategy, and possibly maintain personal information within the s ~~~~type variable????-- what's the right word here???~~~~~.  
