@@ -130,7 +130,19 @@
     We can now model how the state changes from node to node, but how are players allowed to pick their moves?  Technically, there are an infinite number of possible deviations from a score.  Since it's not feasible to include an infinite number of states in the game tree, let's first limit it to the 4 octaves on either side of middle C, and further just to notes in the western scale -- a total of 96 notes.  When considering a score with two instrumentalists who get to make two moves each, we're already up to over 85 million nodes in the game tree, as the tree grows exponentially.  Because of this, it is very important to further limit the possible moves as well as construct strategies that take advantage of lazy evaluation and do not explore all nodes of the tree.  Because the effects of changing the legal set of moves in a game are so drastic (on a computational level), this is something dynamic and changeable in an instance of the Improvise game.
 \section{Improvise: Our Implementation}
 \subsection{Static Components}
-    common to all music games)
+    In order to implement music as a playable game, we must implement the aforementioned components of games: moves, payoffs, and strategies. The choice made here define the framework for the game itself, and therefore, the range of music that can be produced from it.
+
+    The first important piece is the “MusicMv”:
+    \begin{verbatim}
+        data MusicMv = Begin  Pitch
+                     | Extend Pitch
+                     | Rest
+    \end{verbatim}
+
+    This defines a move as either a Begin of a Pitch, Extend of a Pitch, or a Rest. Each represents a musical event of the game’s defined atomic duration. The distinction between begin and extend, however, is somewhat subtle, as is the reasoning behind giving Extend a pitch at all. A Begin represents the onset or attack of the given pitch, whereas an Extend is a continuation of the previous note without a distinct onset. The difference lies in the following example: Given a sequence of moves [Begin p, Begin p], the sound produced would be a note of length one unit followed by another note of length one. There will be an audible separation of the two notes and a distinct beginning of the second immediately following the termination of the first. In contrast, the move sequence [Begin p, Extend p], would produce a note of twice the duration with no audible onset beyond the first. The notes will sound as one continuous event lasting two units. A Rest represents no audible sound, simply one unit of silence.
+
+    It is necessary in our implementation for an Extend to directly follow either a Begin or another Extend. In both cases, the Extension of the preceding note must contain the same pitch. It is unclear then why Extend should be given a pitch at all, as it should be simple enough to look back through the previous moves until the most recent begin, to which the Extend is being applied, is found. We found this to be slightly impractical later on when attempting to write strategies and payoffs. The storage of the Pitch must be weighed against the cost in time of repeatedly looking back. This decision also lifts the burden from the programmer when writing payoffs and strategies, a burden we look to minimize overall.
+
     \begin{enumerate}
         \item anything data related
             \begin{enumerate}
