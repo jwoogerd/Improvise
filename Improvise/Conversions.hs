@@ -10,7 +10,7 @@ import Data.Ratio
  
  This module contains code necessary for converting between Euterpea's
  representation of playable music and Improvise's representation of music as a  
- series of fixed-duration musical events (Rmove).
+ series of fixed-duration musical events (MusicMv).
 
  -}
 
@@ -19,7 +19,7 @@ baseDur :: Dur
 baseDur = 1/8
 
 -- 
--- * Converting from Improvise Rmove to Euterpea Music
+-- * Converting from Improvise MusicMv to Euterpea Music
 --
 
 -- | Reconstruct the realization state from the move summary of a 
@@ -30,16 +30,16 @@ getPerformance mss = ByPlayer (map score (everyPlayer mss))
 
 -- | Convert from an individual's realization of the score in the game to a 
 -- series of playable notes in Euterpea.
-ssToMusic :: Performer -> Music Pitch
-ssToMusic (Performer realization future) = 
-    let condenseMove ((Game.Rest, x):l) Game.Rest  = (Game.Rest, x + 1):l
-        condenseMove ((Begin p1, x):l)   (Extend p2) = 
+performerToMusic :: Performer -> Music Pitch
+performerToMusic (Performer realization future) = 
+    let absorbMove ((Game.Rest, x):l)  Game.Rest  = (Game.Rest, x + 1):l
+        absorbMove ((Begin p1,  x):l) (Extend p2) = 
             if p1 == p2
             then (Begin p1, x+1):l
             else error "Extend must extend same pitch as most recent pitch"
-        condenseMove l mv                 = (mv,1):l
-        condensed                         = foldl condenseMove [] (reverse realization ++ future)
-        condensedToMusic (Game.Rest, d)  = Prim (Euterpea.Rest (d*baseDur))
+        absorbMove l mv                           = (mv,1):l
+        condensed                         = foldl absorbMove [] (reverse realization ++ future)
+        condensedToMusic (Game.Rest, d)   = Prim (Euterpea.Rest (d*baseDur))
         condensedToMusic (Begin p, d)     = Prim (Note (d*baseDur) p) 
         musicMoves                        = map condensedToMusic condensed
     in  foldr (:+:) (Prim (Euterpea.Rest 0)) (reverse musicMoves)
@@ -48,11 +48,11 @@ ssToMusic (Performer realization future) =
 -- playable music. 
 performanceToMusic :: Performance -> Music Pitch
 performanceToMusic (ByPlayer performers) = 
-    foldr ((:=:) . ssToMusic) (Prim (Euterpea.Rest 0)) performers
+    foldr ((:=:) . performerToMusic) (Prim (Euterpea.Rest 0)) performers
 
 
 -- 
--- * Converting from Euterpea Music to Improvise Rmove
+-- * Converting from Euterpea Music to Improvise MusicMv
 --
 
 -- | Ensure the musical event duration is among a set of sane durations.
@@ -76,11 +76,12 @@ musicToMusicMvs (m1 :=: m2)              = let c1 = musicToMusicMvs m1
                                                merge Game.Rest x          = x
                                                merge x          Game.Rest = x
                                                merge _          _          = error "cannot parse overlay"
-                                            in if (length c1) > (length c2)
-                                               then (zipWith merge (take (length c2) c1) c2) ++ drop (length c2) c1
-                                               else (zipWith merge (take (length c1) c2) c1) ++ drop (length c1) c2
+                                               (long, short) = if length c1 > length c2
+                                                               then (c1, c2)
+                                                               else (c2, c1)
+                                               shortLen = length short
+                                            in (zipWith merge (take shortLen long) short) ++ drop shortLen long
 musicToMusicMvs (Modify c m1)            =  musicToMusicMvs m1
-    --trace ("Warning: discarding " ++ show c) musicToMusicMvs m1
 
 -- | Construct an individual score from Euterpea music.
 musicToPerformer :: Music Pitch -> Performer

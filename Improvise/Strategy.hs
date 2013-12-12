@@ -106,7 +106,7 @@ bestNLimitedAlg n depth pay (Discrete (performance, Decision me) edges) =
 bestNLimitedAlg _ _ _ _ = 
     error "bestNLimitedAlg: root of game tree is not a decision!"
 
--- | Calculates the distance between the pitches of two Rmoves in half-steps.
+-- | Calculates the distance between the pitches of two MusicMv in half-steps.
 -- Rests are considered 0 apart from each other, and infinitely far from any pitch.
 moveDistance :: MusicMv -> MusicMv -> Int
 moveDistance m1 m2 =
