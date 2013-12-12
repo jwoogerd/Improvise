@@ -64,7 +64,7 @@ instance Game Improvise where
   type Move  Improvise = MusicMv
   type State Improvise = Performance
   
-  gameTree (Imp payoff state playable) = simStateTreeD 
+  gameTree (Imp state payoff playable) = simStateTreeD 
     end playable registerMoves payoff (length (everyPlayer state)) state
 
 
