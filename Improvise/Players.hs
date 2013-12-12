@@ -1,7 +1,8 @@
 module Players where
+
 import Game
 import Strategy
-import Payoff
+
 import Euterpea hiding (Player, Performance)
 import Hagl
 
