@@ -14,7 +14,7 @@ import Control.Monad.Trans (liftIO)
 import Control.Monad (liftM)
 
 import Euterpea hiding (Performance)
-import Hagl
+import Hagl hiding (print)
 
 --
 -- * These are some examples of Improvise game in action
@@ -88,7 +88,7 @@ printGame = do n <- numCompleted
                (mss,pay) <- liftM (forGame n) summaries
                ps <- players
                printStrLn $ "Summary of Game "++show n++":"
-               printStrLn $ "Players: "
+               printStrLn "Players: "
                printStrLn $ show $ map printPlayer (everyPlayer ps)
                liftIO (printMoves mss)
                printMaybePayoff pay
@@ -97,7 +97,7 @@ printPlayer p = take 18 $ show p ++ repeat ' '
 
 printMoves :: ByPlayer (ByTurn (Move Improvise))-> IO ()
 printMoves mss = let mvs = map everyTurn (everyPlayer mss)
-                     build n = if (n==0) then [] else (n-1):(build (n-1))
+                     build n = if n == 0 then [] else (n-1):build (n-1)
                      base = build (length (head mvs))
-                     getAllNth n = map (flip (!!) n) mvs
-                 in  mapM_ (putStrLn . show . getAllNth) base                                
+                     getAllNth n = map (!! n) mvs
+                 in  mapM_ (print . getAllNth) base                                
