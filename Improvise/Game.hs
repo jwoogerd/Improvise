@@ -33,11 +33,11 @@ type Performance = ByPlayer Performer
 
 
 -- | The Improvise data type wraps information unique to a particular game 
--- execution: a description of the players' musical aesthetic preferences 
--- (i.e. a function to generate payoffs); the game state (the scores); and 
--- a function for determining legal moves from the given game state. 
-data Improvise = Imp { payoff   :: Performance -> Payoff
-                     , state    :: Performance
+-- execution: the initial game state (the scores); a description of the 
+-- players' musical aesthetic preferences (i.e. a function to generate 
+-- payoffs);  and a function for determining legal moves from the given state. 
+data Improvise = Imp { state    :: Performance
+                     , payoff   :: Performance -> Payoff
                      , playable :: Performance -> PlayerID -> [MusicMv]}
  
 
