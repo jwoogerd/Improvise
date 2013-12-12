@@ -53,10 +53,9 @@ minimaxABLimited depth pay (Discrete (_,Decision me) edges) =
         [(m, mm t depth (-inf) inf) | (m,t) <- edges]
     where inf = 1/0 :: Float
           mm (Discrete ( _, Payoff   vs) _    ) d a b = forPlayer me vs  
-          mm (Discrete ( s, Decision  p) edges) d a b = 
-            if d == 0 
-            then forPlayer me (pay s)
-            else
+          mm (Discrete ( s, Decision  p) edges) d a b 
+           | d == 0    = forPlayer me (pay s)
+           | otherwise =  
                 if me == p
                 then foldr (\t a' -> if a' < b
                                      then max (mm t (d - 1) a' b) a'
