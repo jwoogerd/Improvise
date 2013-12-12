@@ -20,19 +20,6 @@ import Hagl
 -- * These are some examples of Improvise game in action
 --
 
--- | Two players both with "Mary Had A Little Lamb" as their score.
-bothPlayingMary = ByPlayer [mary, mary]
-
--- | Some sample player preferences.
-prefs1, prefs2:: [IntPreference]
-prefs1 = [(-3, 2), (-5, 2), (5, 2), (3, 2)]
-prefs2 = [(5, 1), (3, 1)]
-
--- | Sample payoff generation scheme based on intervals and the player 
--- preferences above.
-pay :: Performance -> Payoff
-pay = intervalPayoff [prefs1, prefs2]
-
 -- | Just the score.
 example1 = playImprovise 
                 pay                          -- payoffs for this game
@@ -42,13 +29,13 @@ example1 = playImprovise
 
 
 -- | Random playing (within range).
-example2 = playImprovise pay bothPlayingMary 
+example2 = playImprovise pay playMary 
                          (limitByRange 2) [randy, randy]
 
 
 -- | This sounds good. 
-example3 = playImprovise pay bothPlayingMary
-                         (limitByRange 2) [justTheScore, maximize]
+example3 = playImprovise pay playMary
+                         (limitByRange 2) [justTheScore, maximize pay]
 
 -- | A journey.
 example4 = do 
@@ -59,11 +46,11 @@ example4 = do
 -- | This actually sounds cool....
 example5 = do 
     start <- getFiles dontStop
-    playImprovise pay start (limitByRange 2) [justTheScore, maximize]
+    playImprovise pay start (limitByRange 2) [justTheScore, maximize pay]
 
 example6 = do 
     start <- getFiles dontStop
-    playImprovise pay start (limitByRange 2) [maximize, justTheScore]
+    playImprovise pay start (limitByRange 2) [maximize pay, justTheScore]
 
 
 
@@ -88,7 +75,7 @@ playImprovise :: (Performance -> Payoff)
               -> [Hagl.Player Improvise] 
               -> IO ()
 playImprovise payoff start playable players  =
-    evalGame (Imp payoff start playable) players 
+    evalGame (Imp start payoff playable) players 
              (execute >>
               liftIO (printStrLn "example ready...") >>
               liftIO getChar >>

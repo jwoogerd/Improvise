@@ -97,23 +97,24 @@ fromEitherMidi :: Either String Midi -> Music Pitch
 fromEitherMidi (Right m) = let (m2, _, _) = fromMidi m
                             in mMap fst m2
 
-
+{-
 configWithFiles :: [String] 
     -> IO (Performance, [Player Improvise], Int, Performance -> Payoff)
 configWithFiles args = do
     imported <- mapM importFile args
     let start = extendPerformers $ ByPlayer $ map 
                 (musicToPerformer . fromEitherMidi) imported
-        players = [maximize,maximize]
+        pay     = intervalPayoff [prefs1, prefs2]
+        players = [maximize pay, maximize pay]
         range   = 3
-        pay     = intervalPayoff [player1Prefs,player2Prefs]
     return (start, players, range, pay)
 
-config :: IO (Performance, [Player Improvise], Int, Performance -> Payoff)
-config = let start   = ByPlayer [mary, justCNotes]
-             players = [maximize,maximize]
-             range   = 3
-             pay     = intervalPayoff [player1Prefs,player2Prefs]
-          in return (start, players, range, pay)
 
+config :: IO (Performance, [Player Improvise], Int, Performance -> Payoff)
+config = let start   = ByPlayer [mary, mary]
+             pay     = intervalPayoff [prefs1, prefs2]
+             players = [maximize pay, maximize pay]
+             range   = 3
+          in return (start, players, range, pay)
+-}
 

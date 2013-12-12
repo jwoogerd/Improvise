@@ -18,13 +18,31 @@ import Control.Monad.Trans (liftIO)
 import Control.Monad (liftM,liftM2,unless)
 import System.Environment (getArgs)
 
+
+-- | The opening notes to "Mary Had A Little Lamb".
+mary :: Performer
+mary = Performer [] [Begin (A,4), Extend (A, 4), Begin (G,4), Extend (G, 4),
+                 Begin (F, 4), Extend (F, 4), Begin (G, 4), Extend (G, 4),
+                 Begin (A, 4), Extend (A, 4), Begin (A, 4), Extend (A, 4),
+                 Begin (A, 4), Extend (A, 4), Extend (A, 4), Extend (A, 4)]
+
+
 -- | An example initial game state.
 playMary = ByPlayer [mary, mary]
 
-main = evalGame (Imp (intervalPayoff [player1Prefs, player2Prefs]) 
-                     playMary 
-                     (limitByRange 2))
-                     [maximize, maximize] 
+-- | Some sample player preferences.
+prefs1, prefs2:: [IntPreference]
+prefs1 = [(-3, 2), (-5, 2), (5, 2), (3, 2)]
+prefs2 = [(5, 1), (3, 1)]
+
+-- | Sample payoff generation scheme based on intervals and the player 
+-- preferences above.
+pay :: Performance -> Payoff
+pay = intervalPayoff [prefs1, prefs2]
+
+
+main = evalGame (Imp playMary pay (limitByRange 2))
+                [maximize pay, maximize pay] 
                 (run >> printSummary)
         where run = 
                 step >>= maybe run (\p -> printGame >> processMusic >> return p)
