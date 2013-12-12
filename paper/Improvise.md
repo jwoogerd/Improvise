@@ -54,7 +54,7 @@ event to change the game state.  Leaf nodes represent the final states,
 associated with the payoffs for every player.  Game trees may either be
 *continuous* or *discrete*.  In discrete game trees, there are a fixed number 
 of edges for a finite set of moves, in continuous trees the set of moves is
-potentially infinite and is defined by a continuous function.
+potentially infinite and is defined by a continuous function. A player is said to be playing an *optimal* strategy when she traverses the game tree in such a way that she achieves her maximum payoff available at the final leaf node.
 
 Thus, in Hagl a full game is represented as an instance of the Game type class:
 
@@ -66,14 +66,10 @@ Thus, in Hagl a full game is represented as an instance of the Game type class:
 
 `TreeType`, `State`, and `Move` are associated types defined in terms of `g`, the particular game.  A Game instance provides a gameTree function, which constructs the game tree for the specific game.  Hagl provides a number of operations for interacting with the game values by examining internal tree nodes and edges.
 
-----
-
---Want this to be a further discussion of information and how stratgies relate to the tree --
-
-There must be strict definitions for what information is available in the game to be used by the strategies, both shared amongst the players and not.
-Much of the use of game theory is centered around the development of sound and optimal strategies.  An optimal strategy is one that will always lead the player to their best possible payoff.  But how can we begin to reason about the process of reaching such a payoff? The answer lies in game trees. The best strategies are those that themselves have a concept of a game tree, and traverse it in such a way that they know they will reach optimal payoff nodes. 
-
-But how do game trees work when more than one player must make a decision at a time?  This is where it is necessary to have strict and defined knowledge boundaries for the players.  Simultaneous games are modeled as a layer of strictness on top of alternating games, like TicTacToe.  Players must still make moves one by one, but the information of that choice does not get shared until all players have made their choices.
+Finally, there is a notion of the *information* each player knows about the 
+game state; this knowledge may be shared amongst the players or not.  When 
+more than one player makes their decisions simultaneously, we call this a 
+*simultaneous* game and restrict the players' knowledge of the others' decisions until all moves have been made and the game state has been updated.
 
 ----
 TTT example
@@ -85,15 +81,11 @@ How does all of this fit into the context of a real game?  Let us consider a for
 As you can see, the first row models player X making a move, and O's moves in the second row branch off from X's.  In extensive games where players each make multiple moves, these game trees can grow very rapidly.  TicTacToe, for example has 25,000+ nodes in it's game tree, even when eliminating nodes where we can through rotational symmetry.
 
 
-
-
- 
-
 ###Musical Improvisation as a Game
 
 Given this general game theoretic framework, how do we then map the fundamental components of a game to aspects of an improvisational performance of two or more musicians? 
 
-The first critical component is the concept of moves or decisions available to each player, and the rules that specify those moves for all possible game states.  For a musical game, moves take the form of *fixed-duration, time-stamped musical events*. Rather than thinking of a player's full performance as a sequence of notes, we imagine it as a sequence of musical events, that is, a stream of his or her decisions of what and how to play at each time-stamp.
+For a musical game, moves take the form of *fixed-duration, time-stamped musical events*. Rather than thinking of a player's full performance as a sequence of notes, we imagine it as a sequence of musical events, that is, a stream of his or her decisions of what and how to play at each time-stamp.
 
 Events must necessarily be both time-stamped and of a fixed-duration to ensure that players make their decisions of what to play for each event *at the same time*.  Notes in the musical sense are associated with a given duration, but consider a game in which one player begins playing a whole note and the other a quarter: when should we define the next decision point at which the player's can make their next moves?  When the second player is ready to make another move, the first still has three more beats to play.  Thus, we break notes into musical events of fixed-duration and allow a player to choose to extend the pitch of the previous event if he or she desires to play a note of a longer duration.
 
@@ -101,7 +93,9 @@ In his paper, Hudak notes that the formal model of musical interaction" is limit
 
 Second, the currency or payoff of the game, used to measure a player's success in the performance, translates to a player's notion of musical aesthetic.  This is a measure of how good the musician considers his own performance sounds, given the actions of all the other players. This preference is unique to each player and may be defined along any axis of the musical design space.  The realm of musical aesthetic is practically infinite, and a full discussion of music theory of this depth is well beyond the scope of this paper.  
 
-Finally, each player in a musical game must implement his or her own strategy, which determines how a he or she will move in any given game state.  In a musical improvisational game, a strategy can be as simple as a player adhering to his or her given score, never improvising at all.  Alternatively, a strategy can be more sophisticated, taking into account past or anticipated payoffs, a player's own past moves or those of another player, or some other musical strategy with the only restriction that any move generated by the strategy fall within those allowed by the rules of the game.
+Finally, each player in a musical game implements his or her own strategy, which
+determines what she will play at any given point in the performance.  In a
+musical improvisational game, a strategy can be as simple as a player adhering to his or her given score, never improvising at all.  Alternatively, a strategy can be more sophisticated, taking into account past or anticipated payoffs, a player's own past moves or those of another player, or some other musical strategy with the only restriction that any move generated by the strategy fall within those allowed by the rules of the game.
 
 Lastly, for each individual, the goal of the game is to maximize his or her own payoff.  However, we note that unlike zero-sum games, which are purely competitive, a musical game is more cooperative in nature.  Indeed, there exists *some* competition between players, (Hudak imagines two soloists "vying for attention"), however, intuitively, there is a point at which trying to make the other player "sound bad" (i.e. reduce his payoff) has an equally deleterious effect on one's own performance.  Therefore, the best outcome for each player individually is likely to be one in which the sum of their collective payoffs is also maximized.
 
