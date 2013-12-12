@@ -88,7 +88,7 @@ musicToPerformer :: Music Pitch -> Performer
 musicToPerformer m = Performer [] (musicToMusicMvs m)
 
 
--- | Extends singular scores with rests so that lengths match
+-- | Extends performers with rests so that lengths match
 extendPerformers :: Performance -> Performance
 extendPerformers (ByPlayer performers) = 
     let len                  = maximum $ map (length . future) performers

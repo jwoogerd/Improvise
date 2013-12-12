@@ -53,7 +53,7 @@ parse ("-fc":args) = configWithFiles args
 parse  args  = getInteractive args
 
 main = getArgs >>= parse >>= (\(start, players, range, pay) ->
-          evalGame (Imp pay (extendSSs start) range)
+          evalGame (Imp pay (extendPerformers start) range)
                   players (run >> printSummary))
                 where run = step >>= maybe run (\p -> printGame >> processMusic >> return p) 
               
@@ -76,7 +76,7 @@ processMusic = do
           else liftM treeState location 
     let mus = performanceToMusic performance
     liftIO $ Euterpea.play mus
---    liftIO $ exportMusic mus
+    liftIO $ exportMusic mus
     return ()
 
 -- 

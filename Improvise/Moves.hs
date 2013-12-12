@@ -22,12 +22,12 @@ type Range = Int
 -- enforce the following invariants for possible moves:
 --  TODO: nail down invariants
 availableMoves :: Range -> Performer -> [MusicMv]
-availableMoves i ss = case ss of
+availableMoves i performer = case performer of
   (Performer _               [])          -> []
   (Performer m@(Begin r:rs) (Begin f:fs)) -> Rest: Extend r: 
-                                             fromPast i m ++ generateMoves i f
+                                               fromPast i m ++ generateMoves i f
   (Performer m              (Begin f:fs)) -> Rest: fromPast i m 
-                                             ++ generateMoves i f
+                                               ++ generateMoves i f
   (Performer m@(Begin r:rs)  _ )          -> Rest: Extend r: fromPast i m
   (Performer m@(Extend r:rs) _ )          -> Rest: Extend r: fromPast i m
   (Performer m               _ )          -> Rest:           fromPast i m

@@ -55,7 +55,7 @@ registerMoves performance mvs
         ByPlayer (zipWith register (everyPlayer performance) (reverse mvs))
     | otherwise = 
         error "Cannot register different number of moves than existing players"
-        where register ss mv = Performer (mv: realization ss) (tail (future ss))
+        where register p mv = Performer (mv: realization p) (tail (future p))
    
 
 -- | Game instance
