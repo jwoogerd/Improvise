@@ -22,7 +22,7 @@ baseDur = 1/8
 -- * Converting from Improvise MusicMv to Euterpea Music
 --
 
--- | Reconstruct the realization state from the move summary of a 
+-- | Reconstruct the performance from the move summary of a 
 -- completed game.
 getPerformance :: MoveSummary (Move Improvise) -> Performance
 getPerformance mss = ByPlayer (map score (everyPlayer mss))
@@ -44,7 +44,7 @@ performerToMusic (Performer realization future) =
         musicMoves                        = map condensedToMusic condensed
     in  foldr (:+:) (Prim (Euterpea.Rest 0)) (reverse musicMoves)
 
--- | Overlay each players' individual realization to produce one peice of 
+-- | Overlay each players' individual realizations to produce one peice of 
 -- playable music. 
 performanceToMusic :: Performance -> Music Pitch
 performanceToMusic (ByPlayer performers) = 
