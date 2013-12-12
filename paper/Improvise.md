@@ -71,15 +71,23 @@ game state; this knowledge may be shared amongst the players or not.  When
 more than one player makes their decisions simultaneously, we call this a 
 *simultaneous* game and restrict the players' knowledge of the others' decisions until all moves have been made and the game state has been updated.
 
-----
-TTT example
+####A formal treatment of Tic-tac-toe
 
-How does all of this fit into the context of a real game?  Let us consider a formal treatment of the game TicTacToe.  The decision makers in TicTacToe are the characters 'X', and 'O'.  They must alternate moves, and place their mark on a 3 by 3 grid, in a previously unoccupied cell.  When there are three cells in a row occupied by the same player (horizontally, vertically, or diagonally), that player wins and the game is over.  If the board fills up before this can happen, there is a draw.  The players share the knowledge of where they have each moved on the board. but nothing further.  The payoffs are fixed to be a 1 for the winning player, -1 for the losing player, and 0 for each player in the case of a draw.  Now let us see what this might look like in the first few levels of the game tree:
+As a brief example, we'll consider the formal game theory treatment of the
+well-know game Tic-tac-toe.  The players are the characters 'X', and 'O', who
+make their moves by placing their mark on a 3 by 3 grid.  The rules state that
+the players must alternate turns marks must be placed in a previously 
+unoccupied cell.  When three cells in a row are occupied by the same player 
+(horizontally, vertically, or diagonally), that player wins and the game is
+over.  If the board fills up before this can happen, there is a draw. Players 
+each have knowledge of where both players have moved on the board prior to the 
+current turn (therefore, Tic-tac-toe is *not* an example of a simultaneous game).  Finally, payoffs are fixed: 1 for the winning player, -1 for the losing player, and 0 for each player in the case of a draw.  The first few levels of the game tree might look like this:
 
 --TicTacToe visual here
 
-As you can see, the first row models player X making a move, and O's moves in the second row branch off from X's.  In extensive games where players each make multiple moves, these game trees can grow very rapidly.  TicTacToe, for example has 25,000+ nodes in it's game tree, even when eliminating nodes where we can through rotational symmetry.
+The first row models player X making a move, and O's moves in the second row branch off from X's. 
 
+-- more explanation here
 
 ###Musical Improvisation as a Game
 
@@ -106,9 +114,17 @@ For example, in the simplest case, we imagine two horn players soloing simultane
 
 In terms of the game, *r* refers to each player's realization, the sequence of time-stamped musical events, *s* refers to each player's score (also a sequence of time-stamped musical events) and *player1* and *player2* stand for strategies employed by the given player.  Legal moves at any given point in the game tree are derived from a player's score and realization and payoffs are calculated from realizations and information about the players' preferences.
 
-####Musical Game Trees
+We model a musical improvisational game with a discrete, simultaneous game 
+tree.  We eliminate the possibility of chance from the game tree: at 
+internal nodes, only a player's choices may affect the state of game.  Every 
+edge represents a choice a performer can make to stick to or deviate from the 
+score.
 
-Each branch of a game tree represents a move of one player or the chance of something effecting the game state.  We eliminate the possibility of chance in this game, as the only things that effect state in this game are the player's own choices.  So, every branch then represents a choice the performer has made to stick to or deviate from the score.  However, moves in this game are made at the same time, so we must not modify the state associated with the game until both players have made their move.
+####Discussion of state space
+
+--- needs to be fleshed out a bit
+
+In extensive games where players each make multiple moves, these game trees can grow very rapidly.  TicTacToe, for example has 25,000+ nodes in it's game tree, even when eliminating nodes where we can through rotational symmetry.
 
 We can now model how the state changes from node to node, but how are players
 allowed to pick their moves?  Technically, there are an infinite number of
