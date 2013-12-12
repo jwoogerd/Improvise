@@ -46,8 +46,37 @@ and modular definitions of games. Players in Hagl are represented as a simple da
 Here a Player has a string `Name` and an associated strategy.  Hagl `Player`s 
 are also afforded the option of maintaining a personal notion of game state within the universally quantified type variable, *s*.
 
+A standard way of visualizing the execution of a game is through a *game tree*,
+which represents every possible sequence of moves from an initial game state 
+to a final one.  Game trees are rooted at the starting state, and each branch 
+or edge represents a possible move for a player or chance from an external 
+event to change the game state.  Leaf nodes represent the final states,
+associated with the payoffs for every player.  Game trees may either be
+*continuous* or *discrete*.  In discrete game trees, there are a fixed number 
+of edges for a finite set of moves, in continuous trees the set of moves is
+potentially infinite and is defined by a continuous function.
+
+Thus, in Hagl a full game is represented as an instance of the Game type class:
+
+	class GameTree (TreeType g) => Game g where
+    		type TreeType g :: * -> * -> *
+    		type State g
+    		type Move g
+    		gameTree :: g -> (TreeType g) (State g) (Move g)
+
+`TreeType`, `State`, and `Move` are associated types defined in terms of `g`, the particular game.  A Game instance provides a gameTree function, which constructs the game tree for the specific game.  Hagl provides a number of operations for interacting with the game values by examining internal tree nodes and edges.
+
+----
+
+--Want this to be a further discussion of information and how stratgies relate to the tree --
+
 There must be strict definitions for what information is available in the game to be used by the strategies, both shared amongst the players and not.
-Much of the use of game theory is centered around the development of sound and optimal strategies.  An optimal strategy is one that will always lead the player to their best possible payoff.  But how can we begin to reason about the process of reaching such a payoff? The answer lies in game trees.  Game trees represent every possible sequence of moves from a starting game state to an ending game state.  The root of the game tree is the starting state, and each branch represents a possible move for a player or chance from an external event to change the game state.  The leaf nodes represent the "game over" states and have a payoff for each player associated with them.  The best strategies are those that themselves have a concept of a game tree, and traverse it in such a way that they know they will reach optimal payoff nodes.  
+Much of the use of game theory is centered around the development of sound and optimal strategies.  An optimal strategy is one that will always lead the player to their best possible payoff.  But how can we begin to reason about the process of reaching such a payoff? The answer lies in game trees. The best strategies are those that themselves have a concept of a game tree, and traverse it in such a way that they know they will reach optimal payoff nodes. 
+
+But how do game trees work when more than one player must make a decision at a time?  This is where it is necessary to have strict and defined knowledge boundaries for the players.  Simultaneous games are modeled as a layer of strictness on top of alternating games, like TicTacToe.  Players must still make moves one by one, but the information of that choice does not get shared until all players have made their choices.
+
+----
+TTT example
 
 How does all of this fit into the context of a real game?  Let us consider a formal treatment of the game TicTacToe.  The decision makers in TicTacToe are the characters 'X', and 'O'.  They must alternate moves, and place their mark on a 3 by 3 grid, in a previously unoccupied cell.  When there are three cells in a row occupied by the same player (horizontally, vertically, or diagonally), that player wins and the game is over.  If the board fills up before this can happen, there is a draw.  The players share the knowledge of where they have each moved on the board. but nothing further.  The payoffs are fixed to be a 1 for the winning player, -1 for the losing player, and 0 for each player in the case of a draw.  Now let us see what this might look like in the first few levels of the game tree:
 
@@ -55,29 +84,10 @@ How does all of this fit into the context of a real game?  Let us consider a for
 
 As you can see, the first row models player X making a move, and O's moves in the second row branch off from X's.  In extensive games where players each make multiple moves, these game trees can grow very rapidly.  TicTacToe, for example has 25,000+ nodes in it's game tree, even when eliminating nodes where we can through rotational symmetry.
 
-But how do game trees work when more than one player must make a decision at a time?  This is where it is necessary to have strict and defined knowledge boundaries for the players.  Simultaneous games are modeled as a layer of strictness on top of alternating games, like TicTacToe.  Players must still make moves one by one, but the information of that choice does not get shared until all players have made their choices.
-
-####Hagl
-
- In Hagl, a game is an instance of the Game type class:
-	class GameTree (TreeType g) => Game g where
-    		type TreeType g :: * -> * -> *
-    		type State g
-    		type Move g
-    		gameTree :: g -> (TreeType g) (State g) (Move g)
-
-TreeType, State, and Move are associated types that must be defined in terms of the game.  The only function that must be provided is the gameTree function, that takes a game, and builds it's whole game tree.  Hagl provides a number of operations to then interact with the game, which all involve examination of the built game tree, which is why it is a requirement that the TreeType also is an instance of his GameTree class, which contains operations for examining nodes and the moves that branch off from every node.
-
-Although it is possible to write your own instance of GameTree, Hagl provides
-two generic representations of game trees: Continuous, and Discrete.  Intermediate nodes have a state and list of outbound edges associated with them, and terminal nodes are payoff nodes, that contain a list of Floats, which are the payoffs for each player in the order the players were passed into the game.
 
 
-The execution of a game happens through the evalGame call:
 
-	evalGame :: Game g => g -> [Player g] -> ExecM g a -> IO a
-
-`ExecM` is the game execution monad, a sequence of game operations to evaluate.
-This can be running through the entire game with the `finish` call, or stepping a number of times (step >> step >> step, etc.).  
+ 
 
 ###Musical Improvisation as a Game
 
