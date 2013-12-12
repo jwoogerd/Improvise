@@ -31,9 +31,22 @@ interactions between agents whose decisions affect each other.  In traditional
 game theory, a *game* is a situation in which two or more human agents 
 make decisions.  The human agents are called *players* and the decisions they
 make are *moves*.  The *rules* of the game define a set of legal moves available
-to each player for any *state* of the game.  Players employ *strategies*, 
-which can be either non-deterministic or algebraically defined, by which . There must be strict definitions for what information is available in the game to be used by the strategies, both shared amongst the players and not.  Separately from payoff, there must be a measure of success for each player by the end of the game, called that player's payoff.
+to each player for any *state* of the game.  The algorithms that players 
+employ to choose moves at any game state are called *strategies* and can 
+either be non-deterministic or algebraically defined.  At the game's
+conclusion, a player measures his success in terms of a quantifiable value,
+termed his *payoff*.
 
+Hagl is a domain-specific embedded language in Haskell that allows for easy 
+and modular definitions of games. Players in Hagl are represented as a simple data type: 
+
+	data Player g = forall s. Player Name s (Strategy s g)
+              		 | Name ::: Strategy () g
+
+Here a Player has a string `Name` and an associated strategy.  Hagl `Player`s 
+are also afforded the option of maintaining a personal notion of game state within the universally quantified type variable, *s*.
+
+There must be strict definitions for what information is available in the game to be used by the strategies, both shared amongst the players and not.
 Much of the use of game theory is centered around the development of sound and optimal strategies.  An optimal strategy is one that will always lead the player to their best possible payoff.  But how can we begin to reason about the process of reaching such a payoff? The answer lies in game trees.  Game trees represent every possible sequence of moves from a starting game state to an ending game state.  The root of the game tree is the starting state, and each branch represents a possible move for a player or chance from an external event to change the game state.  The leaf nodes represent the "game over" states and have a payoff for each player associated with them.  The best strategies are those that themselves have a concept of a game tree, and traverse it in such a way that they know they will reach optimal payoff nodes.  
 
 How does all of this fit into the context of a real game?  Let us consider a formal treatment of the game TicTacToe.  The decision makers in TicTacToe are the characters 'X', and 'O'.  They must alternate moves, and place their mark on a 3 by 3 grid, in a previously unoccupied cell.  When there are three cells in a row occupied by the same player (horizontally, vertically, or diagonally), that player wins and the game is over.  If the board fills up before this can happen, there is a draw.  The players share the knowledge of where they have each moved on the board. but nothing further.  The payoffs are fixed to be a 1 for the winning player, -1 for the losing player, and 0 for each player in the case of a draw.  Now let us see what this might look like in the first few levels of the game tree:
@@ -46,8 +59,7 @@ But how do game trees work when more than one player must make a decision at a t
 
 ####Hagl
 
-Hagl is a DSL embedded in Haskell that allows for easy and modular definitions of games.  In Hagl, a game is an instance of the Game type class:
-
+ In Hagl, a game is an instance of the Game type class:
 	class GameTree (TreeType g) => Game g where
     		type TreeType g :: * -> * -> *
     		type State g
@@ -59,27 +71,13 @@ TreeType, State, and Move are associated types that must be defined in terms of 
 Although it is possible to write your own instance of GameTree, Hagl provides
 two generic representations of game trees: Continuous, and Discrete.  Intermediate nodes have a state and list of outbound edges associated with them, and terminal nodes are payoff nodes, that contain a list of Floats, which are the payoffs for each player in the order the players were passed into the game.
 
-The game tree edges, as mentioned in the introduction to game theory, must have a concept of payoff associated with them.  In Hagl, this should be represented through 
-
-Players in Hagl are represented as a simple data type: 
-
-	data Player g = forall s. Player Name s (Strategy s g)
-              		 | Name ::: Strategy () g
-
-Here the `Name` is a `String`, and they must be associated with a strategy, and possibly maintain personal information within the universally quantified type variable, s.
-
---struggling to talk intelligently about the strategy type -- how do I explain this:
-
-	data StratM s g a = StratM { unS :: StateT s (ExecM g) a }
-	type Strategy s g = StratM s g (Move g)
 
 The execution of a game happens through the evalGame call:
 
 	evalGame :: Game g => g -> [Player g] -> ExecM g a -> IO a
 
-`ExecM` is the game execution monad, but in this context, it's simply a sequence of operations to evaluate.  This can be running through the entire game with the `finish` call, or stepping a number of times (step >> step >> step, etc.). 
-
---was weird to try to fit in information about ByPlayer and the other list operations here.  can we just put them in as we need them?
+`ExecM` is the game execution monad, a sequence of game operations to evaluate.
+This can be running through the entire game with the `finish` call, or stepping a number of times (step >> step >> step, etc.).  
 
 ###Musical Improvisation as a Game
 
