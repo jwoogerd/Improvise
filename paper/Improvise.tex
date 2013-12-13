@@ -15,12 +15,12 @@
 
 \section{Introduction}
 
-In \emph{A Model of Performance, Interaction, and Improvisation} \cite{hudakberger95}, Paul
-Hudak outlines a formal model of musical performance, interaction and
+In \emph{A Model of Performance, Interaction, and Improvisation}\cite{hudakberger95}, Paul
+Hudak and Jonathan Berger outline a formal model of musical performance, interaction and
 improvisation based on the idea that a full musical performance can be
 understood as a set of complex, interrelated interactions.
 
-To motivate this model, he observed that in any performance there exists
+To motivate this model, they observed that in any performance there exists
 an interaction between a player and himself: throughout the performance,
 a good musician will continuously make adjustments to his playing based
 on what he is hearing from his own instrument. Likewise, in an ensemble
@@ -30,11 +30,11 @@ player is working off his interpretation of the musical score
 and, in the case where the players are improvising, the produced
 performance may actually deviate wildly from what is given in the score.
 
-In his paper, these interactions are termed \emph{mutually recursive
+In the paper, these interactions are termed \emph{mutually recursive
 processes} where ``the recursion captures feedback {[}and{]} mutual
-recursion captures the interaction between players''. In
-concrete terms, we define these relationships of interaction
-algebraically:
+recursion captures the interaction between players''.\cite{hudakberger95} In
+concrete terms, these relationships of interaction are defined
+algebraically as:
 
 \begin{verbatim}
     r = instr(player s r)
@@ -42,21 +42,21 @@ algebraically:
 
 
 where \texttt{r} is the realization, the music actually produced by a
-player, and \texttt{s} is the score. Hudak then notes that in the
+player, and \texttt{s} is the score.  They then note that in the
 context of improvisation, ``although the goal of those involved\ldots{}is generally one of cooperation, there is also a certain amount of
-conflict.'' Given this natural relationship of conflict and cooperation
+conflict.''\cite{hudakberger95}  Given this natural relationship of conflict and cooperation
 between players in an improvisational scenario and the mathematical
-model we can use to frame it, he suggests the application of \emph{game
+model we can use to frame it, they suggest the application of \emph{game
 theory}.
 
-Grounded in this theoretical framework for how such a music game might
+Grounded in this theoretical framework for how a music game might
 work, this project set out to explore a new method of algorithmic music
 composition. Thus, the goals of the project were:
 
 \begin{itemize}
 \itemsep1pt\parskip0pt\parsep0pt
 \item
-  Implement in Haskell the game theoretic model outlined in Hudak's
+  Implement in Haskell the game theoretic model outlined in Hudak and Berger's
   paper
 \item
   Produce a meaningful, new way of algorithmically generating music that
@@ -87,7 +87,7 @@ that modifies that state.
 
 \subsection{Experimental Game Theory}
 Hagl is a domain-specific language embedded in Haskell that allows for
-simple and modular definitions of experimental games \cite{gametheory, gametheorythesis}. It provides easy interfaces for
+simple and modular definitions of experimental games.\cite{gametheorythesis, gametheory}  It provides easy interfaces for
 defining what each of the above terms means in the context of a specific
 game. Each game is an instance of a type class, which requires the
 definition of a number of pieces.
@@ -162,7 +162,7 @@ performance of two or more musicians?
 
 \subsection{Moves}
 For a musical game, moves take the form of fixed-duration, time-stamped
-musical events\cite{hudakberger95}. Rather than thinking of a player's full performance as a
+musical events.\cite{hudakberger95}  Rather than thinking of a player's full performance as a
 sequence of notes, we imagine it as a sequence of musical events, that
 is, a stream of his decisions of what and how to play at each
 time-stamp.
@@ -178,10 +178,10 @@ beats to play. Thus, we break notes into events of fixed-duration and
 allow a player to choose to extend the pitch of the previous event if he
 or she desires to play a note of a longer duration.
 
-In his paper, Hudak notes that the formal model of musical interaction
+In their paper, Hudak and Berger note that the formal model of musical interaction
 ``is limited to controlling an instrument's sound, for the purposes of
 realizing fundamental parameters such as pitch in addition to more
-subtle issues of articulation, dynamics and phrasing.'' Indeed, in our
+subtle issues of articulation, dynamics and phrasing.''\cite{hudakberger95}  Indeed, in our
 simple implementation, we focus solely on controlling pitch, ignoring
 the more subtle parameters and keeping the players' instruments fixed.
 
@@ -209,8 +209,8 @@ rules of the game.
 For each individual, the goal of the game is to maximize his own
 payoff. However, we note that unlike zero-sum games, which are purely
 competitive, a musical game is more cooperative in nature. Indeed, there
-exists some competition between players -- Hudak imagines two soloists
-``vying for attention.''. However, intuitively there is a point at which
+exists some competition between players -- Hudak and Berger imagine two soloists
+``vying for attention.''\cite{hudakberger95}  However, intuitively there is a point at which
 trying to make the other player ``sound bad'' (i.e.~reduce his payoff)
 has an equally deleterious effect on one's own performance. Therefore,
 the best outcome for each player individually is likely to be one in
@@ -307,8 +307,8 @@ populated with final payoff whenever the state makes it clear the game
 is over. Finally, it must be efficient and expand as needed rather than
 on first call of the function.
 
-We use a recursive function to generate the tree and take advantage of
-lazy evaluation to prevent the whole game tree from being expanded at
+We use a recursive function to generate a discrete, simultaneous game tree and take advantage of
+lazy evaluation to prevent the whole tree from being expanded at
 once. Nodes that are never explored in the process of the game will
 not be expanded at all. To enforce the stipulation in a simultaneous
 game that players be ignorant of each others' moves during a round, 
@@ -322,7 +322,7 @@ a player's strategy, but only used in game tree generation, so is safe.
 It is desirable to modularize those aspects of the game that we identify
 as particular to a unique game execution. Most obviously, we will want
 to experiment with different initial scores, that is, a user should be
-able to play an Improvise game with any song of his choosing.
+able to play an \texttt{Improvise} game with any song of his choosing.
 
 We wrap these dynamic quantities in the type \texttt{Improvise}:
 
@@ -343,9 +343,7 @@ MIDI files of each player's score into an initial state of type
 
 \subsubsection{Payoff}
 \texttt{Imp} also requires a function \texttt{payoff} that generates a 
-Hagl \texttt{Payoff} matrix for any given game state.
-\texttt{payoff} is a user-defined function that generates a Hagl Payoff
-matrix for any given game state. At various times in the development of
+Hagl \texttt{Payoff} matrix for any given game state.  At various times in the development of
 \texttt{Improvise}, it was suggested that payoff be generated based on tempo
 changes, sequences of notes, or even by more sophisticated schemes
 derived from common jazz improvisational techniques. Recognizing the
@@ -412,21 +410,15 @@ maximize his own payoff and diminish that of his adversary. To more
 closely model the cooperative nature of a musical game, we implemented a
 variation on this strategy, which we called \texttt{maximize}. In this
 strategy, the player whose turn it is calculates an intermediate payoff
-for each of his possible moves. From these, we pick the three nodes that
-yield the best intermediate payoff, and explore those nodes by
+for each of his possible moves. This payoff is \emph{intermediate} because it is
+not necessarily indicative of the final payoff.  From these intermediate payoffs, we pick the three nodes that yield the best payoff, and explore those nodes by
 recursively calling the same maximize strategy for the next player. The
 recursive algorithm continues until the bottom of the tree or a defined
 depth limit, at which point, the player who began the exploration
 considers the three payoffs at every level, and choose the maximum from
 these.
 
-The reason it is important to explore the tree rather than
-just picking the move that yields the highest intermediate payoff is
-that another player's decision in the future may affect your final
-payoff, and making an optimal move now may cause a player to fall into a
-bad situation in the future. The payoff is intermediate because it is
-not necessarily indicative of the final
-payoff.
+Rather than immediately choosing the move that yields the highest intermediate payoff at every node, this strategy explores the tree by expanding out three nodes at a time.  We justify this by noting that a player cannot know how another player's decision in the future will affect his final payoff unless he explores the game tree.  Making an optimal move now may cause him to fall into a bad situation in the future.  On the other hand, a sub-optimal move now may open up a branch in the tree that ultimately yields him a higher final payoff.
 
 \subsection{The State Space}
 
@@ -529,23 +521,23 @@ play in unison, both following the score they were given. This is due to
 the limited range by which they are allowed to deviate from the score.
 To this point, they have not had an opportunity to produce any intervals
 of any worth in terms of payoff. However, when we reach the 7th move, we
-see player 2 play an E below player 1's G. The interval from player 1's 
+see Player 2 play an E below Player 1's G. The interval from Player 1's 
 perspective is -3 as the move from a G to an E is down 3 half-steps. 
-Conversely, the interval from player 2's perspective is an E to a G which is 
+Conversely, the interval from Player 2's perspective is an E to a G which is 
 an upward distance of 3 half-steps.  Player 1 values the interval -3 at a 
-payoff of 2, while player 2 values their interval, 3, at 1.
+payoff of 2, while Player 2 values their interval, 3, at 1.
 
 We can see that for all of the following moves, the intervals produced
 are exactly the same. This is quite logical given the input to the game.
-Looking back at \texttt{prefs1} and \texttt{prefs2}, we can see that player 1 and player 2
+Looking back at \texttt{prefs1} and \texttt{prefs2}, we can see that Player 1 and Player 2
 have both achieved the maximum payoff possible,
 However, both players give equal weight to a 5 (or -5) interval as +/-3,
-so why would player 2 not choose to produce any? This turns out to be due
+so why would Player 2 not choose to produce any? This turns out to be due
 to the tie-breaking in the \texttt{maximize} strategy. We chose to have ties in
 payoff broken by playing the note closest to the original score. This
 prevents players from deviating further and further on each successive move,
 creating notes in entirely different registers that do not remotely
-resemble the score. Consequently, because player 1 plays only the score,
+resemble the score. Consequently, because Player 1 plays only the score,
 intervals of 3 half-steps are by definition closer to the score than
 those of 5 half-steps.
 
@@ -566,7 +558,7 @@ available according to the payoffs.
 
 \subsection{``Don't Stop Belivieving''}
 
-While Mary Had a Little Lamb produces interesting and pleasing results,
+While "Mary Had a Little Lamb" produces interesting and pleasing results,
 it is not often that two players start out playing and improvising from
 the same score. What happens in a more realistic scenario, where they're
 already playing a pleasing harmony? We tested this with the first few
@@ -579,16 +571,15 @@ measures of ``Don't Stop Believing'' by Journey.
         [justTheScore, maximize pay]
 \end{verbatim}
 
-Once again, we have player 1 adhering to the score while player 2
+Once again, we have Player 1 adhering to the score while Player 2
 improvises, using the same payoff function and set of preferences as
 above. However, because these players are already harmonizing, 
-even without any improvisation, they already each achieve a positive payoff
+even without any improvisation, they already achieve a positive payoff
 of {[}16,4{]}.  However, with improvisation, they
 have a payoff of {[}8,15{]}, and the realization sounds similar, but
 with a slightly different bass line. Player 2 has kept in mind
 a goal of making the whole performance better -- the cumulative payoff is 23
-rather than 20 -- while still working to focus on improving the score in
-terms of his preferences.
+rather than 20 -- while still working to maximize his own payoff according to his preferences.
 
 \section{Conclusion}
 
@@ -604,16 +595,13 @@ produce music according to any definition of musical aesthetic and run
 on any score. Because this work is in a largely unexplored area, there
 is much room for expansion and alternative representations.
 
-It is natural to model a music game discretely, as there are
-typically a limited number of moves a person would consider in their
-search. In a continuous game tree, you can ask the tree
-whether a move from a given node is acceptable, but you must have a
-sense of the moves of which you ask the tree about rather than getting
-the list from the edge set that a discrete tree node contains. This may
-prove an interesting way to represent the tree, as players do typically
+It is natural to model a music game discretely, as typically there are a finite number of notes a person would consider playing.  However, in a continuous game tree, rather than selecting moves from
+a finite set of edges at every node, a player can "ask" the tree
+whether a move from a given node is acceptable.  This may
+prove an interesting way to represent a musical game, as players do typically
 have a sense of what notes would sound good, and do not need to explore
-the tree in order to find them. This could heavily limit the explored
-state space according to how adventurous the strategies ended up being.
+the tree in order to find them. This representation could heavily limit the explored
+state space depending on the adventurousness of the strategies.
 This would involve a nearly complete reimplementation of this work,
 as the game tree and representation of legal moves are what provide the
 structure for the current formulation of the game.
@@ -621,8 +609,8 @@ structure for the current formulation of the game.
 There is much work to be done in how to define payoff calculations. 
 Calculating a payoff based on preferences of intervals is
 simple, and it is already widely acknowledge that there are intervals
-that sound more pleasing than others. However, the aesthetic of whole 
-pieces of music may more accurately be based on ideas of repetition and
+that sound more pleasing than others. However, the aesthetic of complete 
+pieces of music may be more accurately based on ideas of repetition and
 variation or rates of consonance to dissonance than on harmonies alone.
 These types of calculations are possible, but involve a much more
 specific identification of the aesthetics of music, which cannot be 
@@ -630,18 +618,16 @@ universally defined. This project did not aim to explore those areas, but it
 may be an area for future exploration by those with technical
 backgrounds in music theory.
 
-Finally, we see many opportunities to further explore strategies suitable to an 
+Finally, we see many opportunities to further explore strategies suitable for an 
 improvisational game.  None of the strategies implemented in this project 
 took advantage of the fact that in Hagl a strategy is implemented as a state 
 monad transformer, and so is capable of maintaining awareness of musical  
 repetition or variation. We suspect that a stateful strategy of this kind
-is computationally feasible as long as we limit the exploration of the 
-exponentially expanding game tree.  However, this is an area in which we 
-look forward to doing more work to be certain.
+is computationally feasible as long as we limit the exploration of the game tree, and we look forward to pursuing this idea in the future.
 
 \section{Acknowledgements}
 
-We'd like to acknowledge Paul Hudak and Eric Walkingshaw, without whose work
+We'd like to acknowledge Paul Hudak, Jonathan Berger and Eric Walkingshaw, without whose work
 this project would not have been possible.  We'd also like to thank Norman 
 Ramsey for his guidance and support and our Advanced Functional
 Programming classmates for the genial class atmosphere throughout the semester.
