@@ -14,7 +14,7 @@ import Control.Monad.Trans (liftIO)
 import Control.Monad (liftM)
 
 import Euterpea hiding (Performance)
-import Hagl hiding (print)
+import Hagl
 
 --
 -- * These are some examples of Improvise game in action
@@ -52,56 +52,7 @@ example6 = do
     start <- getFiles dontStop
     playImprovise pay start (limitByRange 2) [maximize pay, justTheScore]
 
-
-
--- 
--- * Some helpers for the demo
---
-
-
 -- | The midi files.
 dontStop :: [String]
 dontStop = ["midi/DontStopMiddle.mid", "midi/DontStopBass.mid"]
-
--- | Import a list of midi files from disk and construct an initial state
--- Performance from them.
-getFiles :: [String] -> IO Performance
-getFiles files = do 
-    imported <- mapM importFile files 
-    return $ extendPerformers 
-             (ByPlayer (map (musicToPerformer . fromEitherMidi) imported))
-
--- | Play an Improvise game with the given payoff function, initial state,
--- move rules, and players.
-playImprovise :: (Performance -> Payoff) -> 
-                 Performance -> 
-                 (Performance -> PlayerID -> [MusicMv]) -> 
-                 [Hagl.Player Improvise] -> 
-                 IO ()
-playImprovise payoff start playable players  =
-    evalGame (Imp start payoff playable) players 
-             (execute >>
-              liftIO (printStrLn "example ready...") >>
-              liftIO getChar >>
-              Demo.printGame >> processMusic) 
-    where execute = step >>= maybe execute return
-
--- | Print summary of the last game.
-printGame :: (GameM m Improvise, Show (Move Improvise)) => m ()
-printGame = do n <- numCompleted
-               (mss,pay) <- liftM (forGame n) summaries
-               ps <- players
-               printStrLn $ "Summary of Game "++show n++":"
-               printStrLn "Players: "
-               printStrLn $ show $ map printPlayer (everyPlayer ps)
-               liftIO (printMoves mss)
-               printMaybePayoff pay
-    where printPlayer p = take 18 $ show p ++ repeat ' '
-
--- | Pretty print moves for two-player games in two columns.
-printMoves :: ByPlayer (ByTurn (Move Improvise))-> IO ()
-printMoves mss = let mvs = map everyTurn (everyPlayer mss)
-                     build n = if n == 0 then [] else (n-1):build (n-1)
-                     base = build (length (head mvs))
-                     getAllNth n = map (!! n) mvs
-                 in  mapM_ (print . getAllNth) base                                
+                             
