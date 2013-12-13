@@ -1,4 +1,4 @@
-module Moves where
+module Moves (limitByRange, Range) where
 
 import Game
 
@@ -20,7 +20,8 @@ type Range = Int
 
 -- | Generate a list of possible moves from a given range and score. We  
 -- enforce the following invariants for possible moves:
---  TODO: nail down invariants
+--      - An Extend must follow a previous Begin or Extend, never a Rest
+--      - An Extend must have the same pitch of the most recent Begin
 availableMoves :: Range -> Performer -> [MusicMv]
 availableMoves i performer = case performer of
   (Performer _               [])          -> []
