@@ -1,6 +1,9 @@
 {-# LANGUAGE FlexibleContexts #-}
 
-module Payoff where
+module Payoff ( Interval
+              , IntPreference
+              , interval8ve
+              , intervalPayoff) where
 
 import Game
 import Hagl
@@ -11,7 +14,7 @@ import Data.List  (lookup)
 
 {- 
 
-This module contains code for various payoff generation schemes based on some
+This module contains code for a payoff generation scheme based on some
 notion of each players' musical aesthetic preferences.
 
 -}
