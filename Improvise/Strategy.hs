@@ -1,6 +1,10 @@
 {-# LANGUAGE FlexibleContexts, TypeFamilies #-}
 
-module Strategy where
+module Strategy ( myScore
+                , shiftScore
+                , firstOpt
+                , minimaxLimited
+                , bestNLimited) where
 
 import Game
 import Payoff
@@ -11,6 +15,12 @@ import Euterpea (absPitch, Pitch, trans)
 import Control.Monad (liftM)
 import Data.Function (on)
 import Data.List     (maximumBy, sortBy)
+
+{- 
+
+This module contains various strategies for Improvise players.
+
+-}
 
 --
 -- * Strategies
@@ -70,15 +80,22 @@ minimaxABLimited depth pay (Discrete (_,Decision me) edges) =
 minimaxABLimited _ _ _ = 
     error "minimaxAlg: root of game tree is not a decision!"
 
--- | bestN Strategy.  --TODO LET ANDREW WITE THIS EXPLANATION
+-- | Variation on the minimax strategy more suited for a cooperative
+-- game like Improvise.  
 bestNLimited :: (DiscreteGame Improvise) => Int -> 
                                             Integer -> 
                                             (Performance -> Payoff) -> 
                                             Strategy () Improvise
 bestNLimited n depth pay = liftM (bestNLimitedAlg n depth pay) location
 
-
-bestNLimitedAlg :: Game Improvise => Int -> Integer -> (Performance -> Payoff) -> Discrete Performance MusicMv -> MusicMv
+-- | Algorithm for the bestNLimited strategy.  This strategy is based on
+-- the player whose turn it is examining intermediate payoffs for N nodes
+-- at each level.
+bestNLimitedAlg :: Game Improvise => Int -> 
+                                     Integer -> 
+                                     (Performance -> Payoff) -> 
+                                     Discrete Performance MusicMv -> 
+                                     MusicMv
 bestNLimitedAlg n depth pay (Discrete (performance, Decision me) edges) =
     let sortFunc p (Discrete ( _, Payoff vs) _) = forPlayer p vs
         sortFunc p (Discrete ( s, _        ) _) = forPlayer p $ pay s
@@ -86,7 +103,7 @@ bestNLimitedAlg n depth pay (Discrete (performance, Decision me) edges) =
         bestN who (Discrete ( s, Decision  p) edges) d =
             if d == 0
             then forPlayer me (pay s)
-            else let paths = sortBy (compare `on` (sortFunc who)) 
+            else let paths = sortBy (compare `on` sortFunc who) 
                                     (map edgeDest edges)
                   in maximumBy compare $ map (\tree -> bestN p tree (d - 1)) 
                                              (take n paths)
@@ -96,14 +113,14 @@ bestNLimitedAlg n depth pay (Discrete (performance, Decision me) edges) =
             getBest []                       = error "best empty list"
             getBest [onlyOne]                = onlyOne
             getBest ((m1, f1):(m2, f2):rest) =
-              if (f1 == f2)
+              if f1 == f2
                 then let Performer _ future = forPlayer me performance
                          actual      = head future
                          diff1       = moveDistance m1 actual
                          diff2       = moveDistance m2 actual
-                      in if diff1 <= diff2
-                         then getBest ((m1, f2):rest)
-                         else getBest ((m2, f2):rest)
+                      in getBest (if diff1 <= diff2
+                                  then (m1, f2):rest
+                                  else (m2, f2):rest)
                 else (m1,f1)
          in fst $ getBest results 
 
