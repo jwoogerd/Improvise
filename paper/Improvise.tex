@@ -31,7 +31,7 @@ performance may actually deviate wildly from what is given in the score.
 
 In his paper, these interactions are termed \emph{mutually recursive
 processes} where ``the recursion captures feedback {[}and{]} mutual
-recursion captures the interaction between players\ldots{}''. In
+recursion captures the interaction between players''. In
 concrete terms, we define these relationships of interaction
 algebraically:
 
@@ -42,14 +42,11 @@ algebraically:
 
 where \texttt{r} is the realization, the music actually produced by a
 player, and \texttt{s} is the score. Hudak then notes that in the
-context of improvisation, ``although the goal of those involved \ldots{}
-is generally one of cooperation, there is also a certain amount of
+context of improvisation, ``although the goal of those involved\ldots{}is generally one of cooperation, there is also a certain amount of
 conflict.'' Given this natural relationship of conflict and cooperation
 between players in an improvisational scenario and the mathematical
 model we can use to frame it, he suggests the application of \emph{game
-theory} where ``engaged processes can be viewed as players in a game,
-where currency is manifested as aspects of musical aesthetics, and the
-rules relate to control of such aesthetics.''
+theory}.
 
 Grounded in this theoretical framework for how such a music game might
 work, this project set out to explore a new method of algorithmic music
@@ -58,14 +55,14 @@ composition. Thus, the goals of the project were:
 \begin{itemize}
 \itemsep1pt\parskip0pt\parsep0pt
 \item
-  Implement in Haskell the game theoretic model outlined in the Hudak's
+  Implement in Haskell the game theoretic model outlined in Hudak's
   paper
 \item
   Produce a meaningful, new way of algorithmically generating music that
-  might resemble human player improvisation.
+  resembles human improvisation
 \item
   Allow for the implementation to be extended through user-defined ideas
-  of payoffs, strategies and rules.
+  of payoffs, strategies and rules
 \end{itemize}
 
 \section{Background: Game Theory}
@@ -103,7 +100,7 @@ definition of a number of pieces.
 \end{verbatim}
 
 \texttt{TreeType}, \texttt{State}, and \texttt{Move} are associated
-types defined in terms of \texttt{g}, the particular game. A Game
+types defined in terms of \texttt{g}, the particular game. A \texttt{Game}
 instance provides a \texttt{gameTree} function, which constructs the
 game tree for the specific game. Hagl provides a number of operations
 for interacting with the game values by examining internal tree nodes
@@ -116,7 +113,7 @@ trees are rooted at the starting state, and each branch or edge
 represents a possible move for a player or chance for an external event
 to change the game state. Leaf nodes represent the final states,
 associated with the payoffs for every player. Game trees may either be
-\emph{continuous} or \emph{discrete} -- In discrete game trees, there
+\emph{continuous} or \emph{discrete}.  In discrete game trees, there
 are a fixed number of edges and therefore a finite set of moves, while
 in continuous trees the set of moves is potentially infinite and is
 defined by a function from move to subtree.
@@ -132,10 +129,10 @@ of a round.
 \subsection{A formal treatment of
 Tic-tac-toe}
 
-As a brief example, consider well-know game Tic-tac-toe.\\The players
+As a brief example, consider the well-known game Tic-tac-toe.  The players
 are the characters `X', and `O', who make their moves by placing their
 mark on a 3 by 3 grid. The rules state that the players must alternate
-turns. On each turn a player puts his mark must in a previously
+turns. On each turn a player must put his mark in a previously
 unoccupied cell. When three cells in a row are occupied by the same
 player (horizontally, vertically, or diagonally), that player wins and
 the game is over. If the board fills up before this can happen, the
@@ -144,18 +141,16 @@ moved on the board prior to the current turn (therefore, Tic-tac-toe is
 not an example of a simultaneous game). Payoffs in this game are fixed:
 1 for the winning player, -1 for the losing player, and 0 for each
 player in the case of a draw. The first few levels of the game tree
-might look like this:
+might look like \emph{Figure 1} above.
 
 \begin{figure}
 \centering
 \includegraphics[width=90mm]{ttt.jpg}
-\caption{Two levels of the Tic Tac Toe Game Tree}
+\caption{Two levels of the Tic-tac-toe game tree}
 \end{figure}
 
-The first row models player X making a move, and O's moves in the second
-row branch off from X's.
-
--- more explanation here
+The first row models the options for player X's initial move.  The second row 
+shows O's possible follow-up moves.
 
 \section{Musical Improvisation as a
 Game}
@@ -175,14 +170,14 @@ Events must necessarily be both time-stamped and of a fixed-duration to
 ensure that players make their decisions of what to play for each event
 at the same time. Notes in the musical sense are associated with a given
 duration, but consider a game in which one player begins playing a whole
-note and the other a quarter: when should we define the next decision
+note and the other a quarter.  When should we define the next decision
 point at which the players can choose their next moves? When the second
 player is ready to make another move, the first still has three more
 beats to play. Thus, we break notes into events of fixed-duration and
 allow a player to choose to extend the pitch of the previous event if he
 or she desires to play a note of a longer duration.
 
-In his paper, Hudak notes that the formal model of musical interaction,
+In his paper, Hudak notes that the formal model of musical interaction
 ``is limited to controlling an instrument's sound, for the purposes of
 realizing fundamental parameters such as pitch in addition to more
 subtle issues of articulation, dynamics and phrasing.'' Indeed, in our
@@ -193,21 +188,21 @@ the more subtle parameters and keeping the players' instruments fixed.
 The payoff of the game, used to measure a player's success in the
 performance, translates to a player's notion of musical aesthetic. This
 is a measure of how good the musician considers the sound of his own
-performance sound in the context of the whole peice. This preference is
+performance in the context of the whole peice. This preference is
 unique to each player and may be defined along any axis of the musical
 design space. The realm of musical aesthetic is practically infinite,
 and a full discussion of music theory of this depth is well beyond the
 scope of this paper.
 
 \subsection{Strategy}
-Each player in a musical game implements his own strategy, which
+Each player in a musical game implements her own strategy, which
 determines what she will play at any given point in the performance. In
 a musical improvisational game, a strategy can be as simple as a player
-adhering to his given score, never improvising at all.
-Alternatively, a strategy can be more sophisticated, taking into account
+adhering to her given score, never improvising at all.
+Alternatively, a strategy can be more sophisticated.  It may take into account
 past or anticipated payoffs, a player's own past moves or those of
 another player, or some other musical strategy with the only restriction
-that any move generated by the strategy fall within those allowed by the
+that any move generated fall within those allowed by the
 rules of the game.
 
 For each individual, the goal of the game is to maximize his own
@@ -234,7 +229,7 @@ implementation}
 
 In order to implement music as a playable game, we must implement the
 aforementioned components of games: moves, payoffs, and strategies. The
-choice made here define the framework for the game itself, and
+choices made here define the framework for the game itself, and
 therefore, the range of music that can be produced from it.  Our 
 implementations for some components are static and fixed, and others 
 can change with each instance of an \texttt{Improvise} game.
@@ -249,7 +244,7 @@ The first important piece is the \texttt{MusicMv}:
                  | Rest
 \end{verbatim}
 
-This defines a move as either a \texttt{Begin} of a \texttt{Pitch},
+which defines a move as either a \texttt{Begin} of a \texttt{Pitch},
 \texttt{Extend} of a \texttt{Pitch}, or a \texttt{Rest}. Each represents
 a musical event of the game's defined smallest duration. Here again we make
 the distinction between a \texttt{Begin} and \texttt{Extend} . A
@@ -266,19 +261,18 @@ duration with no audible onset beyond the first. The notes will sound as
 one continuous event lasting two units. A \texttt{Rest} represents no
 audible sound, simply one unit of silence.
 
-The reasoning behind giving \texttt{Extend} a pitch is subtle. It is
+The reasoning behind giving \texttt{Extend} a pitch is somewhat subtle. It is
 necessary in our implementation for an \texttt{Extend} to directly
 follow either a \texttt{Begin} or another \texttt{Extend}. In both
 cases, the extension of the preceding note must contain the same pitch.
 It is unclear then why \texttt{Extend} should be given a pitch at all,
 as it should be simple enough to look back through the previous moves
-until the most recent begin, to which the extension is being applied, is
+until the most recent \texttt{Begin}, to which the extension is being applied, is
 found. We found this to be slightly impractical later on when attempting
 to write strategies and payoffs. The cost in storage of the
 \texttt{Pitch} must be weighed against the cost in time of repeatedly
 looking back to find it. This decision also lifts the burden from the
-programmer when writing payoffs and strategies, one we look to minimize
-overall.
+programmer when writing payoffs and strategies.
 
 \subsubsection{State}
 The next piece of the game implementation is the \texttt{Performer}:
@@ -288,7 +282,7 @@ The next piece of the game implementation is the \texttt{Performer}:
                                , future      :: [MusicMv] }
 \end{verbatim}
 
-A \texttt{Performer} represents an individual player. The 
+represents an individual player. The 
 \texttt{realization} is
 a list of musical events that have already occurred, i.e.~the player's
 interpretation of the score thus far (most recent event first). The
@@ -534,12 +528,11 @@ play in unison, both following the score they were given. This is due to
 the limited range by which they are allowed to deviate from the score.
 To this point, they have not had an opportunity to produce any intervals
 of any worth in terms of payoff. However, when we reach the 7th move, we
-see player 2 play an E under the score's (and player 1's) G. The
-interval from player 1's perspective is -3 as the move from a G to an E
-is down 3 half-steps. Conversely, the interval from player 2's
-perspective is an E to a G which is an upward distance of 3 half-steps.
-Player 1 values the interval -3 at a payoff of 2, while player 2 values
-their interval, 3, at 1.
+see player 2 play an E below player 1's G. The interval from player 1's 
+perspective is -3 as the move from a G to an E is down 3 half-steps. 
+Conversely, the interval from player 2's perspective is an E to a G which is 
+an upward distance of 3 half-steps.  Player 1 values the interval -3 at a 
+payoff of 2, while player 2 values their interval, 3, at 1.
 
 We can see that for all of the following moves, the intervals produced
 are exactly the same. This is quite logical given the input to the game.
@@ -561,11 +554,11 @@ interesting music, they serve to illustrate the functionality of the
 preference-based payoff system and the effectiveness of the \texttt{maximize}
 strategy.
 
-The payoffs used could be expanded to include more intervals, or even
-the whole range of -12 to +12 and different intervals could be given
-different weights to give them preference over others with lesser
-positive weights. For example, if we doubled the weight of 5 and -5 in
-the above payoffs, it is likely we would have seen more of them in the
+The example preferences used could be expanded to include more intervals, or even
+the whole range of -12 to +12.  Additionally, a player can assign a relative
+preference between different intervals by assigning them different weights.  
+For example, if we doubled the weight of 5 and -5 in
+the above preferences, it is likely we would have seen more of them in the
 output. Though ties are broken by playing closest to the score, these
 payoffs would not create a tie, there would be a clearly superior move
 available according to the payoffs.
@@ -585,15 +578,14 @@ measures of ``Don't Stop Believing'' by Journey.
         [justTheScore, maximize pay]
 \end{verbatim}
 
-Once again we have player 1 sticking to the score while player 2
+Once again, we have player 1 adhering to the score while player 2
 improvises, using the same payoff function and set of preferences as
 above. However, because these players are already harmonizing, 
-even without any improvisation already has a positive payoff for both
-players of {[}16,4{]}. Here, the first player values the combination of
-payoffs much more than the second. However, post improvisation, they
+even without any improvisation, they already each achieve a positive payoff
+of {[}16,4{]}.  However, with improvisation, they
 have a payoff of {[}8,15{]}, and the realization sounds similar, but
-with a slightly different bass line. The second player has kept in mind
-a goal of making the whole score better -- the cumulative payoff is 23
+with a slightly different bass line. Player 2 has kept in mind
+a goal of making the whole performance better -- the cumulative payoff is 23
 rather than 20 -- while still working to focus on improving the score in
 terms of his preferences.
 
@@ -603,7 +595,7 @@ The field of algorithmic music generation is a relatively new and
 growing one. A multitude of tools and methods exist, each employing a
 different model for music and its creation. While many of these tools
 are quite sophisticated and capable, none appear to implement a game
-theoric model. The model used in \texttt{Improvise} represents an approach
+theoretic model. The model used in \texttt{Improvise} represents an approach
 that more closely models the way humans make decisions and interact in
 music. It also offers opportunity for near-infinite customization and
 extension. Customized payoffs and strategies can be easily integrated to
