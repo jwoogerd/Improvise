@@ -1,4 +1,7 @@
-module Conversions where
+module Conversions ( getPerformance
+                   , performanceToMusic
+                   , musicToPerformer
+                   , extendPerformers) where
 
 import Game
 
