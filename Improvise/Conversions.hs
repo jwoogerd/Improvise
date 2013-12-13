@@ -1,16 +1,18 @@
 module Conversions where
 
-import Euterpea hiding (Performance) 
 import Game
+
+import Euterpea hiding (Performance) 
 import Hagl
+
 import Debug.Trace
 import Data.Ratio
 
 {- 
  
  This module contains code necessary for converting between Euterpea's
- representation of playable music and Improvise's representation of music as a  
- series of fixed-duration musical events (MusicMv).
+ representation of playable music and Improvise's representation of music 
+ as a series of fixed-duration musical events (MusicMv).
 
  -}
 
@@ -38,7 +40,8 @@ performerToMusic (Performer realization future) =
             then (Begin p1, x+1):l
             else error "Extend must extend same pitch as most recent pitch"
         absorbMove l mv                           = (mv,1):l
-        condensed                         = foldl absorbMove [] (reverse realization ++ future)
+        condensed                         = foldl absorbMove [] 
+                                                (reverse realization ++ future)
         condensedToMusic (Game.Rest, d)   = Prim (Euterpea.Rest (d*baseDur))
         condensedToMusic (Begin p, d)     = Prim (Note (d*baseDur) p) 
         musicMoves                        = map condensedToMusic condensed
@@ -67,20 +70,21 @@ genMusicMvs r d | okDur d   = replicate (floor (d * (1/baseDur))) r
 
 -- | Contruct a list of Improvise musical events from Euterpea music.
 musicToMusicMvs :: Music Pitch -> [MusicMv]
-musicToMusicMvs (Prim (Note d p))        = Begin p : genMusicMvs (Extend p) (d-baseDur)
+musicToMusicMvs (Prim (Note d p))        = Begin p: 
+                                           genMusicMvs (Extend p) (d-baseDur)
 musicToMusicMvs (Prim (Euterpea.Rest d)) = genMusicMvs Game.Rest d
-musicToMusicMvs (m1 :+: m2)              = musicToMusicMvs m1 ++ musicToMusicMvs m2
-musicToMusicMvs (m1 :=: m2)              = let c1 = musicToMusicMvs m1
-                                               c2 = musicToMusicMvs m2
-                                               merge :: MusicMv -> MusicMv -> MusicMv
-                                               merge Game.Rest x          = x
-                                               merge x          Game.Rest = x
-                                               merge _          _          = error "cannot parse overlay"
-                                               (long, short) = if length c1 > length c2
-                                                               then (c1, c2)
-                                                               else (c2, c1)
-                                               shortLen = length short
-                                            in (zipWith merge (take shortLen long) short) ++ drop shortLen long
+musicToMusicMvs (m1 :+: m2)              = musicToMusicMvs m1 ++ 
+                                           musicToMusicMvs m2
+musicToMusicMvs (m1 :=: m2)              = 
+    let c1 = musicToMusicMvs m1
+        c2 = musicToMusicMvs m2
+        merge :: MusicMv -> MusicMv -> MusicMv
+        merge Game.Rest x          = x
+        merge x          Game.Rest = x
+        merge _          _         = error "cannot parse overlay"
+        (long, short) = if length c1 > length c2 then (c1, c2) else (c2, c1)
+        shortLen = length short
+        in zipWith merge (take shortLen long) short ++ drop shortLen long
 musicToMusicMvs (Modify c m1)            =  musicToMusicMvs m1
 
 -- | Construct an individual score from Euterpea music.
@@ -88,14 +92,14 @@ musicToPerformer :: Music Pitch -> Performer
 musicToPerformer m = Performer [] (musicToMusicMvs m)
 
 
--- | Extends performers with rests so that lengths match
+-- | Extend performers with rests so that lengths match.
 extendPerformers :: Performance -> Performance
 extendPerformers (ByPlayer performers) = 
-    let len                  = maximum $ map (length . future) performers
-        extend (Performer [] future) = let extension = replicate (len - (length future)) Game.Rest
-                                in Performer [] (future ++ extension)
-        extend (Performer  _ future) = error "cannot extend score after start of game"
+    let len = maximum $ map (length . future) performers
+        extend (Performer [] future) = 
+            let extension = replicate (len - length future) Game.Rest
+            in Performer [] (future ++ extension)
+        extend (Performer  _ future) = 
+            error "cannot extend score after start of game"
      in ByPlayer (map extend performers)
-
-
 
