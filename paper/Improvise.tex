@@ -2,7 +2,8 @@
 \usepackage{parskip}
 \usepackage{amssymb,amsmath}
 \usepackage{graphicx}
-
+\usepackage{biblatex}
+\bibliography{Improvise}
 
 \begin{document}
 
@@ -14,7 +15,7 @@
 
 \section{Introduction}
 
-In \emph{A Model of Performance, Interaction, and Improvisation}, Paul
+In \emph{A Model of Performance, Interaction, and Improvisation} \cite{hudakberger95}, Paul
 Hudak outlines a formal model of musical performance, interaction and
 improvisation based on the idea that a full musical performance can be
 understood as a set of complex, interrelated interactions.
@@ -86,7 +87,7 @@ that modifies that state.
 
 \subsection{Experimental Game Theory}
 Hagl is a domain-specific language embedded in Haskell that allows for
-simple and modular definitions of experimental games. It provides easy interfaces for
+simple and modular definitions of experimental games \cite{gametheory, gametheorythesis}. It provides easy interfaces for
 defining what each of the above terms means in the context of a specific
 game. Each game is an instance of a type class, which requires the
 definition of a number of pieces.
@@ -161,7 +162,7 @@ performance of two or more musicians?
 
 \subsection{Moves}
 For a musical game, moves take the form of fixed-duration, time-stamped
-musical events. Rather than thinking of a player's full performance as a
+musical events\cite{hudakberger95}. Rather than thinking of a player's full performance as a
 sequence of notes, we imagine it as a sequence of musical events, that
 is, a stream of his decisions of what and how to play at each
 time-stamp.
@@ -188,7 +189,7 @@ the more subtle parameters and keeping the players' instruments fixed.
 The payoff of the game, used to measure a player's success in the
 performance, translates to a player's notion of musical aesthetic. This
 is a measure of how good the musician considers the sound of his own
-performance in the context of the whole peice. This preference is
+performance in the context of the whole piece. This preference is
 unique to each player and may be defined along any axis of the musical
 design space. The realm of musical aesthetic is practically infinite,
 and a full discussion of music theory of this depth is well beyond the
@@ -539,7 +540,7 @@ are exactly the same. This is quite logical given the input to the game.
 Looking back at \texttt{prefs1} and \texttt{prefs2}, we can see that player 1 and player 2
 have both achieved the maximum payoff possible,
 However, both players give equal weight to a 5 (or -5) interval as +/-3,
-so why would player2 not choose to produce any? This turns out to be due
+so why would player 2 not choose to produce any? This turns out to be due
 to the tie-breaking in the \texttt{maximize} strategy. We chose to have ties in
 payoff broken by playing the note closest to the original score. This
 prevents players from deviating further and further on each successive move,
@@ -617,36 +618,34 @@ This would involve a nearly complete reimplementation of this work,
 as the game tree and representation of legal moves are what provide the
 structure for the current formulation of the game.
 
-There is also much work to be done in defining how payoff calculations
-should happen. Calculating a payoff based on preferences of intervals is
+There is much work to be done in how to define payoff calculations. 
+Calculating a payoff based on preferences of intervals is
 simple, and it is already widely acknowledge that there are intervals
-that sound more pleasing than others. However, the aesthetic of entire
-pieces of music is much more based upon ideas of repetition and
-variation or rates of consonance to dissonance than only harmonies.
+that sound more pleasing than others. However, the aesthetic of whole 
+pieces of music may more accurately be based on ideas of repetition and
+variation or rates of consonance to dissonance than on harmonies alone.
 These types of calculations are possible, but involve a much more
-specific identification of aesthetic of music, which cannot be universally
-defined. This project did not aim to explore those areas, but this
+specific identification of the aesthetics of music, which cannot be 
+universally defined. This project did not aim to explore those areas, but it 
 may be an area for future exploration by those with technical
 backgrounds in music theory.
 
-There is also space to explore strategies, which are easier to expand upon and reason
-about computationally. A strategy is a state monad
-transformer, so it can hold on to and maintain awareness of the
-repetition and variation it wishes to accomplish, if one were to define
-an efficient data structure. We can be more confident that this is
-computationally feasible as long as exploration of the exponentially
-expanding game tree is kept limited according to predefined desires, but
-this is clearly also a place where much work would be needed to make
-progress.
+Finally, we see many opportunities to further explore strategies suitable to an 
+improvisational game.  None of the strategies implemented in this project 
+took advantage of the fact that in Hagl a strategy is implemented as a state 
+monad transformer, and so is capable of maintaining awareness of musical  
+repetition or variation. We suspect that a stateful strategy of this kind
+is computationally feasible as long as we limit the exploration of the 
+exponentially expanding game tree.  However, this is an area in which we 
+look forward to doing more work to be certain.
 
 \section{Acknowledgements}
 
-Paul Hudak
+We'd like to acknowledge Paul Hudak and Eric Walkingshaw, without whose work
+this project would not have been possible.  We'd also like to thank Norman 
+Ramsey for his guidance and support and our Advanced Functional
+Programming classmates for the genial class atmosphere throughout the semester.
 
-Eric Walkingshaw
-
-Norman Ramsey
-
-Advanced Functional Programming Classmates
-
+\printbibliography
+%\bibliographystyle{abbrv}
 \end{document}
