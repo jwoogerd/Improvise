@@ -63,17 +63,21 @@ example6 = do
 dontStop :: [String]
 dontStop = ["midi/DontStopMiddle.mid", "midi/DontStopBass.mid"]
 
+-- | Import a list of midi files from disk and construct an initial state
+-- Performance from them.
 getFiles :: [String] -> IO Performance
 getFiles files = do 
     imported <- mapM importFile files 
     return $ extendPerformers 
              (ByPlayer (map (musicToPerformer . fromEitherMidi) imported))
 
-playImprovise :: (Performance -> Payoff) 
-              -> Performance 
-              -> (Performance -> PlayerID -> [MusicMv])
-              -> [Hagl.Player Improvise] 
-              -> IO ()
+-- | Play an Improvise game with the given payoff function, initial state,
+-- move rules, and players.
+playImprovise :: (Performance -> Payoff) -> 
+                 Performance -> 
+                 (Performance -> PlayerID -> [MusicMv]) -> 
+                 [Hagl.Player Improvise] -> 
+                 IO ()
 playImprovise payoff start playable players  =
     evalGame (Imp start payoff playable) players 
              (execute >>
@@ -92,9 +96,9 @@ printGame = do n <- numCompleted
                printStrLn $ show $ map printPlayer (everyPlayer ps)
                liftIO (printMoves mss)
                printMaybePayoff pay
+    where printPlayer p = take 18 $ show p ++ repeat ' '
 
-printPlayer p = take 18 $ show p ++ repeat ' '
-
+-- | Pretty print moves for two-player games in two columns.
 printMoves :: ByPlayer (ByTurn (Move Improvise))-> IO ()
 printMoves mss = let mvs = map everyTurn (everyPlayer mss)
                      build n = if n == 0 then [] else (n-1):build (n-1)
