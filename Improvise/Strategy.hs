@@ -71,7 +71,10 @@ minimaxABLimited _ _ _ =
     error "minimaxAlg: root of game tree is not a decision!"
 
 -- | bestN Strategy.  --TODO LET ANDREW WITE THIS EXPLANATION
-bestNLimited :: (DiscreteGame Improvise) => Int -> Integer -> (Performance -> Payoff) -> Strategy () Improvise
+bestNLimited :: (DiscreteGame Improvise) => Int -> 
+                                            Integer -> 
+                                            (Performance -> Payoff) -> 
+                                            Strategy () Improvise
 bestNLimited n depth pay = liftM (bestNLimitedAlg n depth pay) location
 
 
@@ -83,8 +86,10 @@ bestNLimitedAlg n depth pay (Discrete (performance, Decision me) edges) =
         bestN who (Discrete ( s, Decision  p) edges) d =
             if d == 0
             then forPlayer me (pay s)
-            else let paths = sortBy (compare `on` (sortFunc who)) (map edgeDest edges)
-                  in maximumBy compare $ map (\tree -> bestN p tree (d - 1)) (take n paths)
+            else let paths = sortBy (compare `on` (sortFunc who)) 
+                                    (map edgeDest edges)
+                  in maximumBy compare $ map (\tree -> bestN p tree (d - 1)) 
+                                             (take n paths)
      in let results = sortBy (compare `on` (negate . snd))
                         [(m, bestN me t depth) | (m,t) <- edges]
             getBest :: [(MusicMv, Float)] -> (MusicMv, Float)
@@ -106,7 +111,8 @@ bestNLimitedAlg _ _ _ _ =
     error "bestNLimitedAlg: root of game tree is not a decision!"
 
 -- | Calculates the distance between the pitches of two MusicMv in half-steps.
--- Rests are considered 0 apart from each other, and infinitely far from any pitch.
+-- Rests are considered 0 apart from each other, and infinitely far from any 
+-- pitch.
 moveDistance :: MusicMv -> MusicMv -> Int
 moveDistance m1 m2 =
   case (m1, m2)
