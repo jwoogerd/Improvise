@@ -5,11 +5,13 @@
 \usepackage{biblatex}
 \bibliography{Improvise}
 
-\begin{document}
 
 \title{The Prisoner's Sonata: \\ \large Modeling Musical Improvisation with Game Theory}
-\date{}
 \author{Caroline Marcks, Andrew Mendelsohn, and Jayme Woogerd}
+
+\begin{document}
+
+
 \maketitle
 
 
@@ -142,11 +144,11 @@ moved on the board prior to the current turn (therefore, Tic-tac-toe is
 not an example of a simultaneous game). Payoffs in this game are fixed:
 1 for the winning player, -1 for the losing player, and 0 for each
 player in the case of a draw. The first few levels of the game tree
-might look like \emph{Figure 1} above.
+might look like \emph{Figure 1} below.
 
-\begin{figure}
+\begin{figure}[b]
 \centering
-\includegraphics[width=90mm]{ttt.jpg}
+\includegraphics[width=84mm]{ttt.jpg}
 \caption{Two levels of the Tic-tac-toe game tree}
 \end{figure}
 
@@ -323,8 +325,10 @@ It is desirable to modularize those aspects of the game that we identify
 as particular to a unique game execution. Most obviously, we will want
 to experiment with different initial scores, that is, a user should be
 able to play an \texttt{Improvise} game with any song of his choosing.
-
-We wrap these dynamic quantities in the type \texttt{Improvise}:
+Execution of games in Hagl already
+accepts players (and their strategies) dynamically, however all other
+pieces dynamic to a game must be wrapped in the game data type
+itself, which we here call \texttt{Improvise}:
 
 \begin{verbatim}
     data Improvise = 
@@ -342,7 +346,7 @@ MIDI files of each player's score into an initial state of type
 \texttt{Performance}.
 
 \subsubsection{Payoff}
-\texttt{Imp} also requires a function \texttt{payoff} that generates a 
+\texttt{Imp} requires a function \texttt{payoff} that generates a 
 Hagl \texttt{Payoff} matrix for any given game state.  At various times in the development of
 \texttt{Improvise}, it was suggested that payoff be generated based on tempo
 changes, sequences of notes, or even by more sophisticated schemes
@@ -385,20 +389,19 @@ interval results in a more competitive relationship between players.
 \subsubsection{Rules}
 Finally, \texttt{playable} is a function for generating the legal moves
 for a given player for any state of the game. 
-For our studies, we defined a simple \texttt{playable}
-function derived from the player's score: legal moves are those within a
-set number of semitones away from the pitch given in the score. We
-called this a ``range-limited'' move generation scheme. To make the
-scheme slightly more sophisticated, we also allowed players to ``look
+For our studies, we defined a simple function, \texttt{limitByRange}, to fulfill this.
+Legal moves are those within a
+set number of semitones away from the pitch given in the player's score. 
+To make the scheme slightly more sophisticated, we also allowed players to ``look
 back'' at their most recently played note and play pitches within a
 range around it as well. Players always have the option of
 resting (emitting no sound) but we also stipulate that an \texttt{Extend} move is
 only legal following a previous \texttt{Begin} or a previous \texttt{Extend}, never after
-a \texttt{Rest}.
+a \texttt{Rest}.  \texttt{limitByRange} accepts an integer value for range before it is of \texttt{playable} type.
 
-This \texttt{playable} function is fairly naive in the realm of music
+This implementation of \texttt{playable} is fairly naive in the realm of music
 improvisation and many other more realistic schemes have been suggested.
-Given the generality of the \texttt{playable} function in the
+Given the generality of the \texttt{playable} type in the
 implementation of \texttt{Improvise}, it should be possible to generate moves
 based on other musical attributes of the piece.
 
@@ -415,7 +418,7 @@ not necessarily indicative of the final payoff.  From these intermediate payoffs
 recursively calling the same maximize strategy for the next player. The
 recursive algorithm continues until the bottom of the tree or a defined
 depth limit, at which point, the player who began the exploration
-considers the three payoffs at every level, and choose the maximum from
+considers the three payoffs at every level, and chooses the maximum from
 these.
 
 Rather than immediately choosing the move that yields the highest intermediate payoff at every node, this strategy explores the tree by expanding out three nodes at a time.  We justify this by noting that a player cannot know how another player's decision in the future will affect his final payoff unless he explores the game tree.  Making an optimal move now may cause him to fall into a bad situation in the future.  On the other hand, a sub-optimal move now may open up a branch in the tree that ultimately yields him a higher final payoff.
@@ -426,7 +429,7 @@ The design decisions made throughout the implementations of the above
 dynamic components are centered around the state space. The size of a
 tree grows exponentially with its branching factor. This means that if
 each player makes \emph{n} decisions each from \emph{m} choices,
-there are on the order of \emph{m\^{}n} nodes in the tree. The decision
+there are on the order of \emph{$m^{n}$} nodes in the tree. The decision
 to limit the range of possible pitch deviation from the score in the
 \texttt{limitByRange} function aims to limit \emph{m}, while the depth
 limit \texttt{maximize} aims to limit \emph{n}. If one was to make
