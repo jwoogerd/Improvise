@@ -15,7 +15,7 @@ import Hagl hiding (print)
 
 import Codec.Midi (Midi)
 import Control.Monad.Trans (liftIO)
-import Control.Monad (liftM,liftM2,unless)
+import Control.Monad (liftM,liftM2,unless, when)
 import System.Environment (getArgs)
 
 
@@ -49,10 +49,7 @@ playImprovise :: (Performance -> Payoff) ->
                  IO ()
 playImprovise payoff start playable players  =
     evalGame (Imp start payoff playable) players 
-             (execute >>
-              liftIO (printStrLn "example ready...") >>
-              liftIO getChar >>
-              printGame >> processMusic) 
+             (execute >> printGame >> processMusic)
     where execute = step >>= maybe execute return
 
 
@@ -60,6 +57,7 @@ main = playImprovise pay
                      (ByPlayer [mary, mary]) 
                      (limitByRange 2) 
                      [justTheScore, maximize pay] 
+
 
 
 --
@@ -74,12 +72,25 @@ getFiles files = do
     return $ extendPerformers 
              (ByPlayer (map (musicToPerformer . fromEitherMidi) imported))
 
+
+-- | Prompt a yes or no question.
+yesno :: String -> IO Bool
+yesno prompt = do
+          putStr $ prompt ++ " y/n: "
+          str <- getLine
+          case str of "y"       -> return True
+                      "yes"     -> return True
+                      otherwise -> return False
+
+
 -- | Write a performance out to disk in midi format.
 exportMusic :: Music Pitch -> IO ()
 exportMusic mus = do
-    putStrLn "Where should we export your music? (enter with quotation marks)"
-    fname <- readLn
-    exportFile fname (testMidi mus)
+    save <- yesno "Do you want to save your music?"
+    when save $ do putStrLn "Where should we export your music?"
+                   fname <- readLn
+                   exportFile fname (testMidi mus)
+
 
 
 -- | Music generation
@@ -87,11 +98,11 @@ processMusic :: (GameM m Improvise, Show (Move Improvise)) => m ()
 processMusic = do
     b <- isNewGame;
     performance <- if b
-          then liftM (getPerformance . fst . forGame 1) summaries
-          else liftM treeState location 
+                   then liftM (getPerformance . fst . forGame 1) summaries
+                   else liftM treeState location
     let mus = performanceToMusic performance
     liftIO $ Euterpea.play mus
-   -- liftIO $ exportMusic mus
+    liftIO $ exportMusic mus
     return ()
 
 
@@ -142,5 +153,4 @@ main = getArgs >>= parse >>= (\(start, players, range, pay) ->
                 where run = step >>= maybe run (\p -> printGame >> processMusic >> return p) 
               
 -}
-
 
