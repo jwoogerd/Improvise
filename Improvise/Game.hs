@@ -56,6 +56,16 @@ registerMoves performance mvs
     | otherwise = 
         error "Cannot register different number of moves than existing players"
         where register p mv = Performer (mv: realization p) (tail (future p))
+
+_registerMoves :: Performance -> (PlayerID -> MusicMv) -> Performance
+_registerMoves performance mvs = 
+    ByPlayer (zipWith register (everyPlayer performance) allPlayerIDs)
+        where register p id = Performer (mvs id : realization p) (tail (future p))
+
+allPlayerIDs :: [PlayerID]
+allPlayerIDs = [1..] -- you have to read the source code to know these start at 1
+
+
    
 
 -- | Game instance
@@ -64,8 +74,8 @@ instance Game Improvise where
   type Move  Improvise = MusicMv
   type State Improvise = Performance
   
-  gameTree (Imp state payoff playable) = simStateTreeD 
-    end playable registerMoves payoff (length (everyPlayer state)) state
+  gameTree (Imp state payoff playable) = _simStateTreeD 
+    end playable _registerMoves payoff (length (everyPlayer state)) state
 
 
 --
@@ -82,6 +92,7 @@ simStateTreeD ::
      -> s                       -- ^ The current state.
      -> Discrete s mv
 simStateTreeD end moves exec pay np = tree 1 []
+  --where tree :: Int -> [mv] -> s -> Discrete s mv 
   where tree p ms s 
             | end s     = Discrete (s, Payoff (pay s)) []
             | p < np    = Discrete (s, Decision p) 
@@ -89,6 +100,27 @@ simStateTreeD end moves exec pay np = tree 1 []
             | p == np   = Discrete (s, Decision p) 
                                [(m, tree 1 [] (exec s (m:ms))) | m <- moves s p]
             | otherwise = error "Internal game tree error."
+
+_simStateTreeD ::
+        (s -> Bool)             -- ^ Is the game over?
+     -> (s -> PlayerID -> [mv]) -- ^ Available moves.
+     -> (s -> (PlayerID -> mv) -> s) -- ^ Execute the moves for each player
+     -> (s -> Payoff)           -- ^ Payoff for this (final) state.
+     -> Int                     -- ^ number of players
+     -> s                       -- ^ The current state.
+     -> Discrete s mv
+_simStateTreeD end moves exec pay np = tree 1 (error "missing move")
+  where -- tree :: Int -> (PlayerID -> mv) -> s -> Discrete s mv
+        tree p ms s 
+            | end s     = Discrete (s, Payoff (pay s)) []
+            | p < np    = Discrete (s, Decision p) 
+                               [(m, tree (p+1) (accumMove p m ms) s) | m <- moves s p]
+            | p == np   = Discrete (s, Decision p) 
+                               [(m, tree 1 (error "missing move") (exec s (accumMove p m ms))) | m <- moves s p]
+            | otherwise = error "Internal game tree error."
+
+accumMove :: PlayerID -> mv -> (PlayerID -> mv) -> (PlayerID -> mv)
+accumMove p m ms = \p' -> if p == p' then m else ms p'
 
 
 --
